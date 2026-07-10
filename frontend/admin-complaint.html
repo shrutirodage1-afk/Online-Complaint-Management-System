@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Complaints - OCMS</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:250px;
+    height:100vh;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    padding:20px 15px;
+    overflow-y:auto;
+}
+
+.sidebar h2{
+    text-align:center;
+    color:white;
+    font-size:28px;
+    margin-bottom:40px;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:white;
+    text-decoration:none;
+    padding:14px 16px;
+    margin:10px 0;
+    border-radius:14px;
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,.15);
+    transform:translateX(5px);
+}
+
+.sidebar a.active{
+    background:white;
+    color:#ff2e88;
+    font-weight:600;
+}
+
+.dept-tag{
+    background:white;
+    color:#ee0979;
+    border:2px solid #ee0979;
+    padding:6px 14px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:14px;
+    display:inline-block;
+}
+
+.page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+/* MAIN */
+.main-content{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:30px;
+}
+
+h1{
+    color:#ee0979;
+    margin-bottom:20px;
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+th{
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+    vertical-align:middle;
+}
+
+tr:hover{
+    background:#fafafa;
+}
+
+select {
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    cursor:pointer;
+    background-color: #fff;
+}
+
+.img-container {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.complaint-img{
+    width:100px;
+    height:80px;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid #ddd;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.complaint-img:hover {
+    transform: scale(1.05);
+}
+
+.no-img{
+    color:#999;
+    font-size:14px;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-block;
+}
+.status-Pending { background: #f59e0b; }
+.status-In-Progress { background: #3b82f6; }
+.status-Closed { background: #10b981; }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>ADMIN</h2>
+    <div id="sidebarDeptTag" style="text-align:center;margin-bottom:25px;">
+        <span class="dept-tag" style="background:rgba(255,255,255,0.15);color:white;border-color:white;">Loading...</span>
+    </div>
+    <a href="admin-dash.html">🏠 Dashboard</a>
+    <a href="admin-complaint.html" class="active">📋 Complaints</a>
+    <a href="admin-user.html">👥 Users</a>
+    <a href="admin-report.html">📊 Reports</a>
+    <a href="admin-department.html">🔁 Switch Department</a>
+    <a href="admin-logout.html">🚪 Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="page-head">
+        <h1>Complaints</h1>
+        <span class="dept-tag" id="deptBadge">Department</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Picture</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Update Status</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+if (typeof OCMC !== 'undefined' && OCMC.requireAuth) {
+    OCMC.requireAuth();
+}
+
+const DEPARTMENTS = {
+    electricity: { label: "Electricity", category: "Electricity", icon: "⚡" },
+    water:       { label: "Water",       category: "Water Issue", icon: "💧" },
+    road:        { label: "Road",        category: "Road Problem", icon: "🛣️" },
+    others:      { label: "Others",      category: "Others", icon: "📋" }
+};
+
+const deptKey = localStorage.getItem("ocms_admin_department");
+
+if (!deptKey || !DEPARTMENTS[deptKey]) {
+    window.location.href = "admin-department.html";
+}
+
+const currentDept = DEPARTMENTS[deptKey];
+
+document.getElementById("deptBadge").innerText = `${currentDept.icon} ${currentDept.label} Dept.`;
+document.getElementById("sidebarDeptTag").innerHTML =
+    `<span class="dept-tag" style="background:rgba(255,255,255,0.15);color:white;border-color:white;">${currentDept.icon} ${currentDept.label}</span>`;
+
+function handleImageError(imageElement) {
+    const parent = imageElement.parentElement;
+    if(parent && parent.tagName === 'A') {
+        parent.outerHTML = `<span class="no-img">No Image</span>`;
+    }
+}
+
+async function render() {
+    let table = document.getElementById("tableBody");
+    table.innerHTML = `<tr><td colspan="9">Loading complaints...</td></tr>`;
+
+    let complaints = [];
+    try {
+        if (typeof OCMC.getAllComplaints === 'function') {
+            const data = await OCMC.getAllComplaints();
+            complaints = data.complaints || data;
+        } else {
+            const data = await OCMC.getMyComplaints();
+            complaints = data.complaints || data;
+        }
+    } catch (err) {
+        table.innerHTML = `<tr><td colspan="9" style="color:red;">⚠️ Error: ${err.message}</td></tr>`;
+        return;
+    }
+
+    complaints = (complaints || []).filter(c => c.category === currentDept.category);
+    table.innerHTML = "";
+
+    if (!complaints || complaints.length === 0) {
+        table.innerHTML = `<tr><td colspan="9">No ${currentDept.label} Complaints Found</td></tr>`;
+        return;
+    }
+
+    complaints.forEach((c) => {
+        let statusClass = c.status ? c.status.replace(/\s+/g, '-') : 'Pending';
+        let complaintId = c.complaintId || c.id; 
+        let createdAt = c.createdAt ? new Date(c.createdAt).toLocaleString() : (c.date || "N/A");
+
+        let imgHtml = `<span class="no-img">No Image</span>`;
+        if (c.image && c.image !== "No Image") {
+            const resolvedUrl = typeof OCMC.imageUrl === 'function' ? OCMC.imageUrl(c.image) : c.image;
+            imgHtml = `
+                <a href="${resolvedUrl}" target="_blank" class="img-container">
+                    <img src="${resolvedUrl}" class="complaint-img" onerror="handleImageError(this)">
+                </a>
+            `;
+        }
+
+        table.innerHTML += `
+        <tr>
+            <td>${complaintId}</td>
+            <td>${imgHtml}</td>
+            <td>${c.title || 'N/A'}</td>
+            <td>${c.category || 'N/A'}</td>
+            <td>${c.description || 'N/A'}</td>
+            <td>${c.location || 'N/A'}</td>
+            <td>${createdAt}</td>
+            <td>
+                <span class="status-badge status-${statusClass}">${c.status || 'Pending'}</span>
+            </td>
+            <td>
+                <select onchange="updateStatus('${complaintId}', this.value)">
+                    <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
+                    <option value="In Progress" ${c.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                    <option value="Closed" ${c.status === "Closed" ? "selected" : ""}>Closed</option>
+                </select>
+            </td>
+        </tr>
+        `;
+    });
+}
+
+async function updateStatus(complaintId, value) {
+    try {
+        if (typeof OCMC.updateComplaintStatus === 'function') {
+            await OCMC.updateComplaintStatus(complaintId, value);
+        } else {
+            console.warn("OCMC.updateComplaintStatus method not found in api.js.");
+        }
+        // Instantly recalculate view on the current UI listing array layout
+        render();
+    } catch (err) {
+        alert(`Failed to update status: ${err.message}`);
+    }
+}
+
+window.onload = render;
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reports - OCMS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            padding-top: 20px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            margin: 5px 10px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(8px);
+        }
+
+        .sidebar a.active {
+            background: white;
+            color: #ff2e88;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 250px;
+            padding: 25px;
+        }
+
+        /* Report Table Box */
+        .table-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+
+        .table-box h2 {
+            color: #ee0979;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        td {
+            padding: 14px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 15px;
+        }
+
+        tr:hover {
+            background: #fff2f8;
+        }
+
+        .download-btn {
+            margin-top: 20px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>ADMIN</h2>
+        <a href="admin-dash.html">🏠 Dashboard</a>
+        <a href="admin-complaint.html">📋 Complaints</a>
+        <a href="admin-user.html">👥 Users</a>
+        <a href="admin-report.html" class="active">📊 Reports</a>
+        <a href="admin-department.html">🔁 Switch Department</a>
+        <a href="admin-logout.html">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+
+        <div class="table-box">
+            <h2>Monthly Breakdowns</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total Complaints</th>
+                        <th>Resolved (Closed)</th>
+                        <th>Pending / Progress</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr><td colspan="4">Loading runtime data...</td></tr>
+                </tbody>
+            </table>
+
+            <button class="download-btn" onclick="window.print()">Print Report</button>
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        if (typeof OCMC !== 'undefined' && OCMC.requireAuth) {
+            OCMC.requireAuth();
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        async function loadReportMetrics() {
+            let complaints = [];
+            try {
+                if (typeof OCMC.getAllComplaints === 'function') {
+                    const data = await OCMC.getAllComplaints();
+                    complaints = data.complaints || data;
+                } else if (typeof OCMC.getMyComplaints === 'function') {
+                    const data = await OCMC.getMyComplaints();
+                    complaints = data.complaints || data;
+                }
+            } catch (err) {
+                console.error("Failed to load analytics: ", err);
+                document.getElementById("reportTableBody").innerHTML = `<tr><td colspan="4" style="color:red">Failed loading statistics dashboard.</td></tr>`;
+                return;
+            }
+
+            complaints = complaints || [];
+
+            // Monthly Aggregation Data Breakdown
+            let monthlyMap = {};
+
+            complaints.forEach(c => {
+                let dateObj = c.createdAt ? new Date(c.createdAt) : (c.date ? new Date(c.date) : new Date());
+                let monthName = MONTH_NAMES[dateObj.getMonth()];
+
+                if (!monthlyMap[monthName]) {
+                    monthlyMap[monthName] = { total: 0, resolved: 0, active: 0 };
+                }
+
+                monthlyMap[monthName].total++;
+                if (c.status === 'Closed') {
+                    monthlyMap[monthName].resolved++;
+                } else {
+                    monthlyMap[monthName].active++;
+                }
+            });
+
+            let tBody = document.getElementById("reportTableBody");
+            tBody.innerHTML = "";
+
+            if (Object.keys(monthlyMap).length === 0) {
+                tBody.innerHTML = `<tr><td colspan="4">No historical records available to calculate yet.</td></tr>`;
+                return;
+            }
+
+            for (const month in monthlyMap) {
+                tBody.innerHTML += `
+                    <tr>
+                        <td><strong>${month}</strong></td>
+                        <td>${monthlyMap[month].total}</td>
+                        <td style="color:#10b981; font-weight:600">${monthlyMap[month].resolved}</td>
+                        <td style="color:#f59e0b; font-weight:600">${monthlyMap[month].active}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        window.onload = loadReportMetrics;
+    </script>
+</body>
+</html>

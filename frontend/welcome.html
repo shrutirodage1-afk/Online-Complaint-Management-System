@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome - OCMS</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  overflow: hidden; /* Prevents scrollbars during animation */
+}
+
+/* ---------------- ANIMATIONS ---------------- */
+/* New Welcome Container Zoom In */
+@keyframes zoomInContainer {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Content Fade + Slide Up */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* main card */
+.container {
+  width: 800px;
+  background: white;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  text-align: center;
+  
+  /* Initial scale zoom entry */
+  animation: zoomInContainer 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.top-section {
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  color: white;
+  padding: 40px;
+}
+
+.top-section h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+  /* Animates right as the zoom completes */
+  animation: fadeInUp 0.5s ease-out 0.5s both;
+}
+
+.top-section p {
+  animation: fadeInUp 0.5s ease-out 0.6s both;
+}
+
+.content {
+  padding: 40px;
+}
+
+.content h2 {
+  color: #ee0979;
+  margin-bottom: 15px;
+  animation: fadeInUp 0.5s ease-out 0.7s both;
+}
+
+.content p {
+  color: #555;
+  line-height: 1.8;
+  margin-bottom: 25px;
+  animation: fadeInUp 0.5s ease-out 0.8s both;
+}
+
+/* buttons */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  animation: fadeInUp 0.5s ease-out 0.9s both;
+}
+
+.btn {
+  padding: 14px 35px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.login-btn {
+  background: #ff6a00;
+  cursor: pointer;
+}
+
+.register-btn {
+  background: #ee0979;
+}
+
+.btn:hover {
+  transform: translateY(-4px);
+  opacity: 0.9;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* ---------------- POPUP (CSS ONLY) ---------------- */
+
+#popup {
+  display: none;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s;
+  z-index: 10;
+}
+
+.popup-box {
+  width: 300px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  transform: scale(0.8);
+  transition: 0.3s;
+}
+
+.popup-box h3 {
+  margin-bottom: 15px;
+  color: #ee0979;
+}
+
+.popup-links a {
+  display: block;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.admin-link {
+  background: #ff6a00;
+}
+
+.user-link {
+  background: #ee0979;
+}
+
+.popup-links a:hover {
+  transform: scale(1.05);
+}
+
+/* SHOW POPUP WHEN CHECKED */
+#popup:checked ~ .popup-overlay {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#popup:checked ~ .popup-overlay .popup-box {
+  transform: scale(1);
+}
+
+/* close button */
+.close {
+  display: block;
+  margin-top: 10px;
+  color: #555;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="top-section">
+    <h1>🛡️ Welcome to OCMS</h1>
+    <p>Online Complaint Management System</p>
+  </div>
+
+  <div class="content">
+
+    <h2>Raise, Track & Resolve Complaints Easily</h2>
+
+    <p>
+      Our system helps users submit complaints and track status efficiently.
+    </p>
+
+    <div class="buttons">
+
+      <label for="popup" class="btn login-btn">Login</label>
+
+      <a href="regist.html" class="btn register-btn">Register</a>
+
+    </div>
+
+  </div>
+
+</div>
+
+<input type="checkbox" id="popup">
+
+<div class="popup-overlay">
+
+  <div class="popup-box">
+
+    <h3>Select Login Type</h3>
+
+    <div class="popup-links">
+      <a href="admin-login.html" class="admin-link">Admin Login</a>
+      <a href="login.html" class="user-link">User Login</a>
+    </div>
+
+    <label for="popup" class="close">Close</label>
+
+  </div>
+
+</div>
+
+</body>
+</html>

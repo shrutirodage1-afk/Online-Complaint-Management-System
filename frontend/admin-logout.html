@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logout</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #ff5e00, #ff176b);
+    }
+
+    .logout-box {
+        width: 400px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transition: 0.3s;
+    }
+
+    .logout-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .logout-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+
+    h2 {
+        color: #ff176b;
+        margin-bottom: 10px;
+    }
+
+    p {
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+
+    .logout-btn {
+        background: #ff176b;
+    }
+
+    .cancel-btn {
+        background: #666;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+        transform: scale(1.05);
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="logout-box">
+
+    <div class="logout-icon">🚪</div>
+
+    <h2>Logout</h2>
+
+    <p>Are you sure you want to logout?</p>
+
+    <div class="buttons">
+
+        <button class="btn logout-btn" onclick="logoutUser()">
+            Yes, Logout
+        </button>
+
+        <button class="btn cancel-btn" onclick="cancelLogout()">
+            Cancel
+        </button>
+
+    </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    function logoutUser() {
+        OCMC.clearSession();
+        alert("Logged Out Successfully!");
+        window.location.href = "admin-login.html"; // ✅ FIXED HERE
+    }
+
+    function cancelLogout() {
+        window.history.back(); // or change to dashboard.html
+    }
+</script>
+
+</body>
+</html>

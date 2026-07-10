@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Track Complaint - OCMS</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    display:flex;
+    height:100vh;
+    background:#f4f6f9;
+    position: relative;
+    overflow: hidden;
+}
+
+/* MAP BACKGROUND CANVAS */
+#mapCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none; /* Allows clicks to pass through to the buttons/inputs */
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:230px;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    padding:20px;
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar h2{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:15px 25px;
+    margin:5px 0;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,0.2);
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid white;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction: column;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* CARD */
+.card{
+    width:500px;
+    background:rgba(255, 255, 255, 0.95); /* Slight transparency to feel integrated with the map */
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    backdrop-filter: blur(5px); /* Smooth frost glass effect over the map */
+}
+
+.card-header-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card h2{
+    color:#ee0979;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-family: 'Poppins', sans-serif;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+/* RESULT BOX */
+.result{
+    margin-top:15px;
+    padding:15px;
+    background:#f9f9f9;
+    border-radius:10px;
+    display:none;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* IMAGE STYLE */
+.result img{
+    width:100%;
+    margin-top:10px;
+    border-radius:10px;
+}
+
+.lang-switcher select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="mapCanvas"></canvas>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" class="active" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+   
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="main">
+<div class="card">
+
+    <div class="card-header-box">
+        <h2 data-i18n="track_title">🔍 Track Complaint</h2>
+        <div class="lang-switcher">
+            <select id="langSelect">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="mr">मराठी</option>
+                <option value="es">Español</option>
+            </select>
+        </div>
+    </div>
+
+    <input type="text" id="complaintId" placeholder="Enter Complaint ID" data-i18n-holder="track_place">
+    <button onclick="trackComplaint()" data-i18n="btn_track">Track Complaint</button>
+
+    <div id="result" class="result"></div>
+
+</div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        nav_dashboard: "🏠 Dashboard",
+        nav_submit: "📝 Submit Complaint",
+        nav_myComplaints: "📋 My Complaints",
+        nav_track: "🔍 Track Complaint",
+        nav_profile: "👤 Profile",
+    
+        nav_logout: "🚪 Logout",
+        track_title: "🔍 Track Complaint",
+        track_place: "Enter Complaint ID",
+        btn_track: "Track Complaint",
+        searching: "Searching...",
+        not_found: "Complaint Not Found",
+        alert_empty: "Please enter Complaint ID",
+        no_img: "No Image Uploaded",
+        lbl_id: "Complaint ID",
+        lbl_title: "Title",
+        lbl_category: "Category",
+        lbl_description: "Description",
+        lbl_location: "Location",
+        lbl_status: "Status",
+        lbl_date: "Date"
+    },
+    hi: {
+        nav_dashboard: "🏠 डैशबोर्ड",
+        nav_submit: "📝 शिकायत दर्ज करें",
+        nav_myComplaints: "📋 मेरी शिकायतें",
+        nav_track: "🔍 शिकायत ट्रैक करें",
+        nav_profile: "👤 प्रोफ़ाइल",
+       
+        nav_logout: "🚪 लॉगआउट",
+        track_title: "🔍 ट्रैक शिकायत",
+        track_place: "शिकायत आईडी दर्ज करें",
+        btn_track: "ट्रैक करें",
+        searching: "खोज की जा रही है...",
+        not_found: "शिकायत नहीं मिली",
+        alert_empty: "कृपया शिकायत आईडी दर्ज करें",
+        no_img: "कोई छवि अपलोड नहीं की गई",
+        lbl_id: "शिकायत आईडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "श्रेणी",
+        lbl_description: "विवरण",
+        lbl_location: "स्थान",
+        lbl_status: "स्थिति",
+        lbl_date: "दिनांक"
+    },
+    mr: {
+        nav_dashboard: "🏠 डॅशबोर्ड",
+        nav_submit: "📝 तक्रार नोंदवा",
+        nav_myComplaints: "📋 माझ्या तक्रारी",
+        nav_track: "🔍 तक्रार ट्रॅक करा",
+        nav_profile: "👤 प्रोफाइल",
+       
+        nav_logout: "🚪 लॉगआउट",
+        track_title: "🔍 तक्रार ट्रॅक करा",
+        track_place: "तक्रार आयडी प्रविष्ट करा",
+        btn_track: "तक्रार ट्रॅक करा",
+        searching: "शोधत आहे...",
+        not_found: "तक्रार आढळली नाही",
+        alert_empty: "कृपया तक्रार आयडी प्रविष्ट करा",
+        no_img: "फोटो अपलोड केला नाही",
+        lbl_id: "तक्रार आयडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "वर्ग",
+        lbl_description: "वर्णन",
+        lbl_location: "ठिकाण",
+        lbl_status: "स्थिती",
+        lbl_date: "दिनांक"
+    },
+    es: {
+        nav_dashboard: "🏠 Panel",
+        nav_submit: "📝 Enviar Queja",
+        nav_myComplaints: "📋 Mis Quejas",
+        nav_track: "🔍 Rastrear Queja",
+        nav_profile: "👤 Perfil",
+       
+        nav_logout: "🚪 Cerrar Sesión",
+        track_title: "🔍 Rastrear Queja",
+        track_place: "Ingrese ID de la Queja",
+        btn_track: "Rastrear Queja",
+        searching: "Buscando...",
+        not_found: "Queja No Encontrada",
+        alert_empty: "Por favor ingrese el ID de la queja",
+        no_img: "Sin imagen subida",
+        lbl_id: "ID de la Queja",
+        lbl_title: "Título",
+        lbl_category: "Categoría",
+        lbl_description: "Descripción",
+        lbl_location: "Ubicación",
+        lbl_status: "Estado",
+        lbl_date: "Fecha"
+    }
+};
+
+let activeComplaint = null;
+let searchState = ""; 
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.querySelectorAll("[data-i18n-holder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-holder");
+        if (dict[key]) el.placeholder = dict[key];
+    });
+    document.documentElement.lang = lang;
+    renderResult(lang);
+}
+
+function renderResult(lang) {
+    const dict = translations[lang] || translations.en;
+    const resultBox = document.getElementById("result");
+
+    if (searchState === "searching") {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = `<p>${dict.searching}</p>`;
+        return;
+    }
+    if (searchState === "error") {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = `<p style="color:red;font-weight:bold;">${dict.not_found}</p>`;
+        return;
+    }
+    if (!activeComplaint) {
+        resultBox.style.display = "none";
+        return;
+    }
+
+    resultBox.style.display = "block";
+    resultBox.innerHTML = `
+        <p><b>${dict.lbl_id}:</b> ${activeComplaint.complaintId}</p>
+        <p><b>${dict.lbl_title}:</b> ${activeComplaint.title}</p>
+        <p><b>${dict.lbl_category}:</b> ${activeComplaint.category}</p>
+        <p><b>${dict.lbl_description}:</b> ${activeComplaint.description || "-"}</p>
+        <p><b>${dict.lbl_location}:</b> ${activeComplaint.location || "-"}</p>
+        <p><b>${dict.lbl_status}:</b> <span style="color:#ee0979;font-weight:bold;">${activeComplaint.status}</span></p>
+        <p><b>${dict.lbl_date}:</b> ${new Date(activeComplaint.createdAt).toLocaleString()}</p>
+        ${activeComplaint.image ? `<img src="${OCMC.imageUrl(activeComplaint.image)}">` : `<p>${dict.no_img}</p>`}
+    `;
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+async function trackComplaint(){
+    const id = document.getElementById("complaintId").value.trim().toUpperCase();
+    const currentLang = langSelect.value;
+    const dict = translations[currentLang] || translations.en;
+
+    if(!id){
+        alert(dict.alert_empty);
+        return;
+    }
+
+    searchState = "searching";
+    activeComplaint = null;
+    renderResult(currentLang);
+
+    try {
+        const data = await OCMC.trackComplaint(id);
+        activeComplaint = data.complaint;
+        searchState = "success";
+    } catch (err) {
+        searchState = "error";
+    }
+    renderResult(currentLang);
+}
+
+applyTranslations(initialLang);
+
+/* GOOGLE MAPS STYLE BACKGROUND ANIMATION LOGIC */
+const canvas = document.getElementById('mapCanvas');
+const ctx = canvas.getContext('2d');
+
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+});
+
+// Mock nodes/locations representing data nodes on a map grid
+const locations = [];
+const numLocations = 22;
+const roads = [];
+
+for (let i = 0; i < numLocations; i++) {
+    locations.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 3 + 2,
+        pulse: Math.random() * Math.PI,
+        speed: 0.02 + Math.random() * 0.02
+    });
+}
+
+// Generate simple paths connecting random close points to form a grid
+for (let i = 0; i < locations.length; i++) {
+    for (let j = i + 1; j < locations.length; j++) {
+        let dist = Math.hypot(locations[i].x - locations[j].x, locations[i].y - locations[j].y);
+        if (dist < 320) { 
+            roads.push({ from: locations[i], to: locations[j] });
+        }
+    }
+}
+
+function animateMap() {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw background subtle grid mesh
+    ctx.strokeStyle = 'rgba(238, 9, 121, 0.03)';
+    ctx.lineWidth = 1;
+    const gridSize = 60;
+    for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+    for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+
+    // Draw road connections
+    ctx.strokeStyle = 'rgba(200, 200, 220, 0.4)';
+    ctx.lineWidth = 2;
+    roads.forEach(road => {
+        ctx.beginPath();
+        ctx.moveTo(road.from.x, road.from.y);
+        ctx.lineTo(road.to.x, road.to.y);
+        ctx.stroke();
+    });
+
+    // Draw active locator nodes and pulse waves
+    locations.forEach(loc => {
+        loc.pulse += loc.speed;
+        let currentPulseRadius = loc.radius + Math.sin(loc.pulse) * 12;
+        let alpha = Math.max(0, 1 - (currentPulseRadius / 15));
+
+        // Outer pulsing locator wave
+        ctx.beginPath();
+        ctx.arc(loc.x, loc.y, currentPulseRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(238, 9, 121, ${alpha * 0.3})`;
+        ctx.fill();
+
+        // Solid inner map marker point
+        ctx.beginPath();
+        ctx.arc(loc.x, loc.y, loc.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff6a00';
+        ctx.fill();
+    });
+
+    requestAnimationFrame(animateMap);
+}
+
+animateMap();
+</script>
+</body>
+</html>

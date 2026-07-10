@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OCMS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            overflow: hidden; 
+        }
+
+        /* ---------------- ANIMATIONS ---------------- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes purr {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.05); }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+
+        /* ---------------- KITTEN & THOUGHT BUBBLE ---------------- */
+        .kitten-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: -15px; /* Pulls the login card slightly closer */
+            z-index: 10;
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+
+        /* Thought Bubble */
+        .thought-bubble {
+            position: relative;
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ee0979;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            margin-bottom: 12px;
+            animation: floatBubble 3s ease-in-out infinite;
+        }
+
+        /* Small circles making up the thought connection */
+        .thought-bubble::after, .thought-bubble::before {
+            content: '';
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .thought-bubble::after {
+            width: 10px;
+            height: 10px;
+            bottom: -12px;
+            left: 55%;
+        }
+
+        .thought-bubble::before {
+            width: 6px;
+            height: 6px;
+            bottom: -20px;
+            left: 58%;
+        }
+
+        /* The Kitten */
+        .kitten {
+            width: 70px;
+            height: 55px;
+            background: #f3f3f3;
+            border-radius: 40px 40px 10px 10px;
+            position: relative;
+            animation: purr 2s ease-in-out infinite;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Ears */
+        .ear {
+            position: absolute;
+            top: -10px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 18px solid #f3f3f3;
+        }
+
+        .ear.left { left: 6px; transform: rotate(-15px); }
+        .ear.right { right: 6px; transform: rotate(15deg); }
+
+        .ear::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: -8px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #ffb6c1; /* Pink inner ear */
+        }
+
+        /* Eyes */
+        .eye {
+            position: absolute;
+            top: 20px;
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            animation: blink 4s infinite;
+        }
+
+        .eye.left { left: 18px; }
+        .eye.right { right: 18px; }
+
+        /* Snout / Nose */
+        .nose {
+            position: absolute;
+            top: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 4px;
+            background: #ffb6c1;
+            border-radius: 50%;
+        }
+
+        /* ---------------- LOGIN CONTAINER ---------------- */
+        .login-container {
+            width: 400px;
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+
+        /* Back Button */
+        .back-btn-container {
+            margin-bottom: 15px;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(238, 9, 121, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 6px 15px rgba(238, 9, 121, 0.5);
+        }
+
+        .role-switch {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out 0.3s both;
+        }
+
+        .role-btn {
+            padding: 8px 24px;
+            border: 2px solid #ee0979;
+            border-radius: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.5s ease-out 0.35s both;
+        }
+
+        .logo h1 {
+            color: #ee0979;
+            font-size: 32px;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        /* Form Inputs Staggered Animations */
+        .input-box:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.45s both; }
+        .input-box:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.55s both; }
+
+        .input-box {
+            margin-bottom: 18px;
+        }
+
+        .input-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-box input:focus {
+            border-color: #ee0979;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: fadeInUp 0.5s ease-out 0.6s both;
+        }
+
+        .options a {
+            text-decoration: none;
+            color: #ee0979;
+            font-weight: 500;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.5s ease-out 0.65s both;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 9, 121, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 15px;
+            color: #444;
+            animation: fadeInUp 0.5s ease-out 0.7s both;
+        }
+
+        .register-link a {
+            color: #ee0979;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
+            animation: fadeInUp 0.5s ease-out 0.75s both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="kitten-container">
+        <div class="thought-bubble">Mmn... Login? 🐾</div>
+        <div class="kitten">
+            <div class="ear left"></div>
+            <div class="ear right"></div>
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="nose"></div>
+        </div>
+    </div>
+
+    <div class="login-container">
+
+        <div class="back-btn-container">
+            <a href="welcome.html" class="back-btn">← Back</a>
+        </div>
+
+        <div class="role-switch">
+            <span class="role-btn">User Portal</span>
+        </div>
+
+        <div class="logo">
+            <h1>OCMS</h1>
+            <p>Online Complaint Management System</p>
+        </div>
+
+        <form id="loginForm">
+
+            <div class="input-box">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="Enter Email" required>
+            </div>
+
+            <div class="input-box">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter Password" required>
+            </div>
+
+            <div class="options">
+                <label>
+                    <input type="checkbox"> Remember Me
+                </label>
+                <a href="forgot-password.html">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+
+        </form>
+
+        <div class="register-link">
+            Don't have an account?
+            <a href="regist.html">Register</a>
+        </div>
+
+        <div class="footer">
+            © 2026 Online Complaint Management System
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            try {
+                const data = await OCMC.loginUser(email, password);
+                OCMC.setSession(data.token, data.user);
+                alert("Login Successful!");
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                alert("⚠️ " + err.message);
+            }
+        });
+    </script>
+
+</body>
+</html>

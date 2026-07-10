@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard & AI Assistant</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            position: fixed;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            padding-top: 20px;
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        /* SIDEBAR HOVER AESTHETIC */
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            transition: 0.4s;
+        }
+
+        .sidebar a:hover {
+            transform: translateX(8px);
+            border-left: 4px solid white;
+        }
+
+        .sidebar a:hover::before {
+            left: 0;
+        }
+
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-left: 4px solid white;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 230px;
+            padding: 20px;
+            width: calc(100% - 230px);
+        }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* CARDS GRID */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        /* CARD DESIGN */
+        .card {
+            padding: 20px;
+            color: white;
+            border-radius: 18px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* glow effect */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 60%);
+            transform: scale(0);
+            transition: 0.5s;
+        }
+
+        /* hover lift */
+        .card:hover {
+            transform: translateY(-12px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 0, 102, 0.25);
+        }
+
+        /* glow show */
+        .card:hover::before {
+            transform: scale(1);
+        }
+
+        /* text animation */
+        .card h2,
+        .card p {
+            transition: 0.3s;
+        }
+
+        .card:hover h2,
+        .card:hover p {
+            transform: scale(1.05);
+        }
+
+        /* COLORS */
+        .card1 {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+        }
+
+        .card2 {
+            background: linear-gradient(135deg, #36d1dc, #5b86e5);
+        }
+
+        .card3 {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        .card4 {
+            background: linear-gradient(135deg, #fc4a1a, #f7b733);
+        }
+
+        /* SECTION */
+        .section {
+            background: white;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 60px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th {
+            background: #ee0979;
+            color: white;
+            padding: 12px;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            background: #ee0979;
+            color: rgb(242, 241, 246);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Language switcher */
+        .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            float: right;
+        }
+
+        .lang-switcher select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .header::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        /* FLOATING CHATBOT WIDGET STYLES */
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-container {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            height: 50vh;
+            max-height: 600px;
+            min-height: 400px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .chat-container.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            font-size: 0.8rem;
+            background: #28a745;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #fdfdfd;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            max-width: 80%;
+        }
+
+        .message-content {
+            padding: 10px 14px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .bot-message .message-content {
+            background-color: #e9ecef;
+            color: #333;
+            border-top-left-radius: 2px;
+        }
+
+        .bot-typing-message {
+            align-self: flex-start;
+        }
+        
+        .bot-typing-message .message-content {
+            background-color: #e9ecef;
+            color: #777;
+            font-style: italic;
+            border-top-left-radius: 2px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .user-message .message-content {
+            background-color: #007bff;
+            color: white;
+            border-top-right-radius: 2px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e9ecef;
+            background-color: #fff;
+            gap: 8px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-input-area button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar h2 { display: none; }
+            .sidebar a { text-align: center; padding: 15px 0; font-size: 20px; }
+            .main { margin-left: 70px; width: calc(100% - 70px); }
+            .chat-container { width: calc(100% - 40px); right: 20px; left: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>OCMS</h2>
+        <a href="dashboard.html" class="active" data-i18n="nav_dashboard">🏠 Dashboard</a>
+        <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+        <a href="my-complaint.html" data-i18n="nav_myComplaints">📋 My Complaints</a>
+        <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+        <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+        <a href="notification.html" data-i18n="nav_notifications">🔔 Notifications</a>
+        <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div class="lang-switcher">
+                <label for="langSelect" data-i18n="lang_label">🌐 Language:</label>
+                <select id="langSelect">
+                    <option value="en">English</option>
+                     <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+
+            <h2><b><span data-i18n="welcome">Welcome</span>, <span id="userName">User</span>👋</b></h2>
+            <p data-i18n="subtitle">Online Complaint Management System</p>
+        </div>
+
+        <div class="cards">
+            <div class="card card1">
+                <h2 id="totalCount">0</h2>
+                <p data-i18n="totalComplaints">Total Complaints</p>
+            </div>
+            <div class="card card2">
+                <h2 id="pendingCount">0</h2>
+                <p data-i18n="pending">Pending</p>
+            </div>
+            <div class="card card3">
+                <h2 id="progressCount">0</h2>
+                <p data-i18n="inProgress">In Progress</p>
+            </div>
+            <div class="card card4">
+                <h2 id="resolvedCount">0</h2>
+                <p data-i18n="resolved">Resolved</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 data-i18n="recentComplaints">Recent Complaints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th data-i18n="col_id">ID</th>
+                        <th data-i18n="col_title">Title</th>
+                        <th data-i18n="col_status">Status</th>
+                        <th data-i18n="col_action">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recentBody">
+                    <tr><td colspan="4" data-i18n="loading">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="chat-toggle-btn" id="chatToggleBtn">🚀</button>
+
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <h2>🚀 OCMC AI Assistant</h2>
+            <div class="status-indicator">Online</div>
+        </div>
+
+        <div class="chat-box" id="chat-box">
+            <div class="message bot-message">
+                <div class="message-content">Hello! How can I help you today?</div>
+            </div>
+        </div>
+
+        <form class="chat-input-area" id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off" required>
+            <button type="submit" id="send-btn">Send</button>
+        </form>
+    </div>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        const translations = {
+            en: {
+                nav_dashboard: "🏠 Dashboard",
+                nav_submit: "📝 Submit Complaint",
+                nav_myComplaints: "📋 My Complaints",
+                nav_track: "🔍 Track Complaint",
+                nav_profile: "👤 Profile",
+                nav_notifications: "🔔 Notifications",
+                nav_logout: "🚪 Logout",
+                lang_label: "🌐 Language:",
+                welcome: "Welcome",
+                subtitle: "Online Complaint Management System",
+                totalComplaints: "Total Complaints",
+                pending: "Pending",
+                inProgress: "In Progress",
+                resolved: "Resolved",
+                recentComplaints: "Recent Complaints",
+                col_id: "ID",
+                col_title: "Title",
+                col_status: "Status",
+                col_action: "Action",
+                loading: "Loading...",
+                noComplaints: "No complaints yet",
+                view: "View",
+                errorPrefix: "⚠️"
+            },
+            hi: {
+                nav_dashboard: "🏠 डैशबोर्ड",
+                nav_submit: "📝 शिकायत दर्ज करें",
+                nav_myComplaints: "📋 मेरी शिकायतें",
+                nav_track: "🔍 शिकायत ट्रैक करें",
+                nav_profile: "👤 प्रोफ़ाइल",
+                nav_notifications: "🔔 सूचनाएं",
+                nav_logout: "🚪 लॉगआउट",
+                lang_label: "🌐 भाषा:",
+                welcome: "स्वागत है",
+                subtitle: "ऑनलाइन शिकायत प्रबंधन प्रणाली",
+                totalComplaints: "कुल शिकायतें",
+                pending: "लंबित",
+                inProgress: "प्रगति में",
+                resolved: "हल हो गया",
+                recentComplaints: "हाल की शिकायतें",
+                col_id: "आईडी",
+                col_title: "शीर्षक",
+                col_status: "स्थिति",
+                col_action: "कार्रवाई",
+                loading: "लोड हो रहा है...",
+                noComplaints: "अभी तक कोई शिकायत नहीं",
+                view: "देखें",
+                errorPrefix: "⚠️"
+            },
+            mr: {
+                nav_dashboard: "🏠 डॅशबोर्ड",
+                nav_submit: "📝 तक्रार नोंदवा",
+                nav_myComplaints: "📋 माझ्या तक्रारी",
+                nav_track: "🔍 तक्रार ट्रॅक करा",
+                nav_profile: "👤 प्रोफाइल",
+                nav_notifications: "🔔 सूचना",
+                nav_logout: "🚪 लॉगआउट",
+                lang_label: "🌐 भाषा:",
+                welcome: "स्वागत आहे",
+                subtitle: "ऑनलाइन तक्रार व्यवस्थापन प्रणाली",
+                totalComplaints: "एकूण तक्रारी",
+                pending: "प्रलंबित",
+                inProgress: "प्रगतीपथावर",
+                resolved: "निकाली",
+                recentComplaints: "अलीकडील तक्रारी",
+                col_id: "आयडी",
+                col_title: "शीर्षक",
+                col_status: "स्थिती",
+                col_action: "कृती",
+                loading: "लोड होत आहे...",
+                noComplaints: "अद्याप कोणतीही तक्रार नाही",
+                view: "पहा",
+                errorPrefix: "⚠️"
+            },
+            es: {
+                nav_dashboard: "🏠 Panel",
+                nav_submit: "📝 Enviar Queja",
+                nav_myComplaints: "📋 Mis Quejas",
+                nav_track: "🔍 Rastrear Queja",
+                nav_profile: "👤 Perfil",
+                nav_notifications: "🔔 Notificaciones",
+                nav_logout: "🚪 Cerrar Sesión",
+                lang_label: "🌐 Idioma:",
+                welcome: "Bienvenido",
+                subtitle: "Sistema de Gestión de Quejas en Línea",
+                totalComplaints: "Quejas Totales",
+                pending: "Pendiente",
+                inProgress: "En Progreso",
+                resolved: "Resuelto",
+                recentComplaints: "Quejas Recientes",
+                col_id: "ID",
+                col_title: "Título",
+                col_status: "Estado",
+                col_action: "Acción",
+                loading: "Cargando...",
+                noComplaints: "Aún no hay quejas",
+                view: "Ver",
+                errorPrefix: "⚠️"
+            }
+        };
+
+        let lastComplaints = null;
+        let lastError = null;
+
+        function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+        function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+        function applyTranslations(lang) {
+            const dict = translations[lang] || translations.en;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (dict[key]) el.textContent = dict[key];
+            });
+            document.documentElement.lang = lang;
+            renderTable(lang);
+        }
+
+        // DYNAMIC USERNAME LOGIC
+        function displayUserName() {
+            const nameSpan = document.getElementById('userName');
+            
+            // Try fetching via OCMC object profile system first
+            if (typeof OCMC !== 'undefined' && OCMC.getUserProfile) {
+                OCMC.getUserProfile().then(user => {
+                    if (user && user.name) nameSpan.textContent = user.name;
+                }).catch(() => useFallbackName());
+            } else {
+                useFallbackName();
+            }
+
+            function useFallbackName() {
+                // Read what was stored inside localStorage/sessionStorage on successful login/registration
+                const savedName = localStorage.getItem("ocms_user_name") || sessionStorage.getItem("ocms_user_name");
+                if (savedName) {
+                    nameSpan.textContent = savedName;
+                } else {
+                    nameSpan.textContent = "User"; 
+                }
+            }
+        }
+
+        function calculateMetrics(complaintsArray) {
+            if (!complaintsArray) return;
+            
+            let total = complaintsArray.length;
+            let pending = 0;
+            let inProgress = 0;
+            let resolved = 0;
+
+            complaintsArray.forEach(c => {
+                const status = c.status.toLowerCase().trim();
+                if (status === 'pending') pending++;
+                else if (status === 'in progress' || status === 'inprogress') inProgress++;
+                else if (status === 'resolved') resolved++;
+            });
+
+            document.getElementById('totalCount').textContent = total.toString().padStart(2, '0');
+            document.getElementById('pendingCount').textContent = pending.toString().padStart(2, '0');
+            document.getElementById('progressCount').textContent = inProgress.toString().padStart(2, '0');
+            document.getElementById('resolvedCount').textContent = resolved.toString().padStart(2, '0');
+        }
+
+        function renderTable(lang) {
+            const dict = translations[lang] || translations.en;
+            const body = document.getElementById("recentBody");
+
+            if (lastError) {
+                body.innerHTML = `<tr><td colspan="4">${dict.errorPrefix} ${lastError}</td></tr>`;
+                return;
+            }
+
+            if (!lastComplaints) {
+                body.innerHTML = `<tr><td colspan="4">${dict.loading}</td></tr>`;
+                return;
+            }
+
+            if (lastComplaints.length === 0) {
+                body.innerHTML = `<tr><td colspan="4">${dict.noComplaints}</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = lastComplaints.slice(0, 5).map(c => `
+                <tr>
+                    <td>${c.complaintId}</td>
+                    <td>${c.title}</td>
+                    <td>${c.status}</td>
+                    <td><a href="my-complaint.html"><button class="btn">${dict.view}</button></a></td>
+                </tr>
+            `).join("");
+        }
+
+        const langSelect = document.getElementById("langSelect");
+        const initialLang = getSavedLang();
+        langSelect.value = initialLang;
+
+        langSelect.addEventListener("change", (e) => {
+            const lang = e.target.value;
+            setSavedLang(lang);
+            applyTranslations(lang);
+        });
+
+        applyTranslations(initialLang);
+        displayUserName(); // Run username checker
+
+        if (typeof OCMC !== 'undefined' && OCMC.requireAuth) {
+            OCMC.requireAuth();
+        }
+
+        (async function loadRecent(){
+            try {
+                if (typeof OCMC !== 'undefined' && OCMC.getMyComplaints) {
+                    const data = await OCMC.getMyComplaints();
+                    lastComplaints = data.complaints;
+                } else {
+                    lastComplaints = [
+                        { complaintId: "CMP001", title: "Street light failure", status: "Pending" },
+                        { complaintId: "CMP002", title: "Water line leakage", status: "In Progress" }
+                    ];
+                }
+                lastError = null;
+            } catch (err) {
+                lastComplaints = null;
+                lastError = err.message;
+            }
+            calculateMetrics(lastComplaints);
+            renderTable(langSelect.value);
+        })();
+
+        // CHATBOT OPERATIONS
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+        
+        const API_URL = "http://localhost:5000/api/chat";
+
+        chatToggleBtn.addEventListener('click', () => {
+            chatContainer.classList.toggle('open');
+            chatToggleBtn.textContent = chatContainer.classList.contains('open') ? '❌' : '🚀';
+        });
+
+        function appendMessage(text, senderClassName) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', senderClassName);
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            contentDiv.textContent = text;
+            messageDiv.appendChild(contentDiv);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageText = userInput.value.trim();
+            if (!messageText) return;
+
+            appendMessage(messageText, 'user-message');
+            userInput.value = '';
+            appendMessage("Thinking...", 'bot-typing-message');
+            
+            const typingIndicators = chatBox.querySelectorAll('.bot-typing-message');
+            const targetTypingIndicator = typingIndicators[typingIndicators.length - 1];
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+                if (targetTypingIndicator) targetTypingIndicator.remove();
+
+                if (response.ok) {
+                    appendMessage(data.reply, 'bot-message');
+                } else {
+                    appendMessage(`Error: ${data.reply || 'Something went wrong.'}`, 'bot-message');
+                }
+            } catch (error) {
+                if (targetTypingIndicator) targetTypingIndicator.remove();
+                appendMessage("Failed to connect to the server. Ensure your Node backend is active on port 5000.", 'bot-message');
+                console.error("Fetch Error:", error);
+            }
+        });
+    </script>
+</body>
+</html>

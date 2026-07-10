@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - OCMS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            overflow: hidden; /* Prevents scrollbars during animation */
+        }
+
+        /* ---------------- ANIMATIONS ---------------- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Admin Container */
+        .login-container {
+            width: 400px;
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            
+            /* Main entry animation */
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+
+        /* Back Button Container */
+        .back-btn-container {
+            margin-bottom: 15px;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(238, 9, 121, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 6px 15px rgba(238, 9, 121, 0.5);
+        }
+
+        /* Admin Tag Indicator */
+        .role-switch {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out 0.3s both;
+        }
+
+        .role-btn {
+            padding: 8px 24px;
+            border: 2px solid #ee0979;
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            cursor: default;
+        }
+
+        /* Logo */
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.5s ease-out 0.35s both;
+        }
+
+        .logo h1 {
+            color: #ee0979;
+            font-size: 32px;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Input Fields with staggered delays */
+        .input-box:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.45s both; }
+        .input-box:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.55s both; }
+
+        .input-box {
+            margin-bottom: 18px;
+        }
+
+        .input-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus {
+            border-color: #ee0979;
+        }
+
+        /* Options */
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: fadeInUp 0.5s ease-out 0.6s both;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .options input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .options a {
+            text-decoration: none;
+            color: #ee0979;
+            font-weight: 500;
+        }
+
+        .options a:hover {
+            text-decoration: underline;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(238, 9, 121, 0.3);
+            animation: fadeInUp 0.5s ease-out 0.65s both;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(238, 9, 121, 0.5);
+        }
+
+        .login-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Register Redirect Text Box */
+        .register-box {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 14px;
+            color: #555;
+            animation: fadeInUp 0.5s ease-out 0.7s both;
+        }
+
+        .register-box a {
+            color: #ee0979;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .register-box a:hover {
+            text-decoration: underline;
+            color: #ff6a00;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            animation: fadeInUp 0.5s ease-out 0.75s both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <div class="back-btn-container">
+            <a href="welcome.html" class="back-btn">← Back</a>
+        </div>
+
+        <div class="role-switch">
+            <span class="role-btn">Admin Panel</span>
+        </div>
+
+        <div class="logo">
+            <h1>OCMS</h1>
+            <p>Sign in to your dashboard</p>
+        </div>
+
+        <form id="adminLoginForm">
+
+            <div class="input-box">
+                <label>Admin Email</label>
+                <input type="email" id="email" placeholder="Enter Admin Email" required>
+            </div>
+
+            <div class="input-box">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter Password" required>
+            </div>
+
+            <div class="options">
+                <label>
+                    <input type="checkbox"> Remember Me
+                </label>
+                <a href="forgot-password.html">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Login as Admin
+            </button>
+
+        </form>
+
+        <div class="register-box">
+            Don't have an admin account? <a href="regist.html">Register here</a>
+        </div>
+
+        <div class="footer">
+            © 2026 Online Complaint Management System
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById("adminLoginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            try {
+                const data = await OCMC.loginAdmin(email, password);
+                OCMC.setSession(data.token, data.user);
+                
+                // Clear any previously selected department context fields 
+                localStorage.removeItem("ocms_admin_department");
+                localStorage.removeItem("ocms_admin_department_label");
+                
+                window.location.href = "admin-department.html";
+            } catch (err) {
+                alert("⚠️ " + err.message);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

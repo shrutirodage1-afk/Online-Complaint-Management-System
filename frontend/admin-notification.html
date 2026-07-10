@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - OCMS</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:250px;
+    height:100vh;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    padding:20px 15px;
+}
+
+.sidebar h2{
+    text-align:center;
+    color:white;
+    font-size:28px;
+    margin-bottom:40px;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+    text-decoration:none;
+    padding:14px 16px;
+    margin:10px 0;
+    border-radius:14px;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,0.15);
+    transform:translateX(6px);
+}
+
+.sidebar a.active{
+    background:white;
+    color:#ff2e88;
+    font-weight:600;
+}
+
+/* MAIN */
+.main{
+    margin-left:250px;
+    padding:30px;
+    width:calc(100% - 250px);
+}
+
+/* TOP */
+.top-bar{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.admin-tag{
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    padding:6px 12px;
+    border-radius:20px;
+}
+
+/* CARDS */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+    margin-top:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+.card h1{
+    color:#ee0979;
+}
+
+/* NOTIFICATION SENDER BOX */
+.notify-box{
+    margin-top:25px;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.notify-box:hover{
+    transform:scale(1.02);
+}
+
+textarea{
+    width:100%;
+    height:80px;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    margin-top:10px;
+}
+
+button{
+    margin-top:10px;
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>ADMIN</h2>
+
+    <a href="admin-dash.html">🏠 Dashboard</a>
+    <a href="admin-complaint.html" >📋 Complaints</a>
+    <a href="admin-user.html">👥 Users</a>
+    <a href="admin-report.html">📊 Reports</a>
+    <a href="admin-notification.html"class="active">🔔 Notifications</a>
+    <a href="admin-department.html">🔁 Switch Department</a>
+    <a href="admin-logout.html">🚪 Logout</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="top-bar">
+    <h2>Admin Dashboard</h2>
+    <div class="admin-tag">Live System</div>
+</div>
+
+<!-- NOTIFICATION SENDER -->
+<div class="notify-box">
+
+    <h3>Send Notification to Users</h3>
+
+    <textarea id="msg" placeholder="Write notification message..."></textarea>
+
+    <button onclick="sendNotification()">Send Notification</button>
+
+</div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+OCMC.requireAdmin();
+window.location.href = "admin-complaint.html";
+</script>
+
+</body>
+</html>

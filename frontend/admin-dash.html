@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - OCMS</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:250px;
+    height:100vh;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    padding:20px 15px;
+}
+
+.sidebar h2{
+    text-align:center;
+    color:white;
+    font-size:28px;
+    margin-bottom:40px;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+    text-decoration:none;
+    padding:14px 16px;
+    margin:10px 0;
+    border-radius:14px;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,0.15);
+    transform:translateX(6px);
+}
+
+.sidebar a.active{
+    background:white;
+    color:#ff2e88;
+    font-weight:600;
+}
+
+/* MAIN */
+.main{
+    margin-left:250px;
+    padding:30px;
+    width:calc(100% - 250px);
+}
+
+/* TOP */
+.top-bar{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.admin-tag{
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    padding:6px 12px;
+    border-radius:20px;
+}
+
+.dept-tag{
+    background:white;
+    color:#ee0979;
+    border:2px solid #ee0979;
+    padding:6px 14px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:14px;
+}
+
+.top-bar-right{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.switch-dept-link{
+    color:#ee0979;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+}
+
+.switch-dept-link:hover{
+    text-decoration:underline;
+}
+
+/* MAIN CARDS */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+    margin-top:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+    position:relative;
+    overflow:hidden;
+}
+
+.card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 15px 30px rgba(0,0,0,0.15);
+}
+
+.card h1{
+    color:#ee0979;
+    font-size:32px;
+    margin-top:10px;
+}
+
+/* INFO GRID */
+.info-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+    margin-top:25px;
+}
+
+/* ALERT BOX */
+.alerts{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.alerts:hover{
+    transform:scale(1.02);
+}
+
+.alerts h3{
+    color:#ee0979;
+    margin-bottom:10px;
+}
+
+.alert{
+    padding:10px;
+    border-left:4px solid #ee0979;
+    margin:10px 0;
+    background:#f9f9f9;
+    font-size:14px;
+}
+
+/* SYSTEM PANEL */
+.system{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.system:hover{
+    transform:scale(1.02);
+}
+
+.system h3{
+    color:#ee0979;
+    margin-bottom:10px;
+}
+
+.status{
+    color:green;
+    font-weight:bold;
+}
+
+/* EXTRA INSIGHTS */
+.insights{
+    margin-top:25px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.insight-box{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    transition:0.3s;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+.insight-box:hover{
+    transform:translateY(-8px);
+}
+
+.insight-box h3{
+    color:#ee0979;
+    margin-bottom:10px;
+}
+
+.bar{
+    height:8px;
+    background:#eee;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.fill{
+    height:8px;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+}
+</style>
+</head>
+
+<body>
+
+    
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>ADMIN</h2>
+    <div id="sidebarDeptTag" style="text-align:center;margin-bottom:25px;">
+        <span class="dept-tag" style="background:rgba(255,255,255,0.15);color:white;border-color:white;">Loading...</span>
+    </div>
+
+    <a href="admin-dash.html" class="active">🏠 Dashboard</a>
+    <a href="admin-complaint.html">📋 Complaints</a>
+    <a href="admin-user.html">👥 Users</a>
+    <a href="admin-report.html">📊 Reports</a>
+    <a href="admin-department.html">🔁 Switch Department</a>
+    <a href="admin-logout.html">🚪 Logout</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOP -->
+<div class="top-bar">
+    <h2>Admin Dashboard</h2>
+    <div class="top-bar-right">
+        <span class="dept-tag" id="deptBadge">Department</span>
+        <div class="admin-tag">Live System</div>
+    </div>
+</div>
+
+<!-- MAIN STATS -->
+<div class="cards">
+    <div class="card">
+        <h3>Total Complaints</h3>
+        <h1 id="total">0</h1>
+    </div>
+
+    <div class="card">
+        <h3>Pending</h3>
+        <h1 id="pending">0</h1>
+    </div>
+
+    <div class="card">
+        <h3>In Progress</h3>
+        <h1 id="progress">0</h1>
+    </div>
+
+    <div class="card">
+        <h3>Closed</h3>
+        <h1 id="closed">0</h1>
+    </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="insights">
+
+    <div class="insight-box">
+        <h3>Complaint Load</h3>
+        <p>System workload based on complaints</p>
+        <div class="bar"><div class="fill" style="width:70%"></div></div>
+    </div>
+
+    <div class="insight-box">
+        <h3>User Activity</h3>
+        <p>Active users interacting with system</p>
+        <div class="bar"><div class="fill" style="width:55%"></div></div>
+    </div>
+
+    <div class="insight-box">
+        <h3>Resolution Rate</h3>
+        <p>Speed of complaint closing</p>
+        <div class="bar"><div class="fill" style="width:80%"></div></div>
+    </div>
+
+</div>
+
+<!-- INFO -->
+<div class="info-grid">
+
+    <div class="alerts">
+        <h3>System Alerts</h3>
+        <div class="alert">⚠ New complaint received</div>
+        <div class="alert">✔ Complaint #OCMS101 resolved</div>
+        <div class="alert">⚠ High pending complaints detected</div>
+        <div class="alert">✔ System backup completed</div>
+    </div>
+
+    <div class="system">
+        <h3>System Status</h3>
+        <p>Server: <span class="status">Active</span></p>
+        <p>Database: <span class="status">Connected</span></p>
+        <p>API: <span class="status">Running</span></p>
+        <p>Uptime: <span class="status">99.9%</span></p>
+    </div>
+
+</div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+OCMC.requireAdmin();
+
+// ---- Department handling (frontend-only) ----
+const DEPARTMENTS = {
+    electricity: { label: "Electricity", category: "Electricity", icon: "⚡" },
+    water:       { label: "Water",       category: "Water Issue", icon: "💧" },
+    road:        { label: "Road",        category: "Road Problem", icon: "🛣️" },
+    others:      { label: "Others",      category: "Others", icon: "📋" }
+};
+
+const deptKey = localStorage.getItem("ocms_admin_department");
+
+if (!deptKey || !DEPARTMENTS[deptKey]) {
+    window.location.href = "admin-department.html";
+} else {
+
+const currentDept = DEPARTMENTS[deptKey];
+
+document.getElementById("deptBadge").innerText = `${currentDept.icon} ${currentDept.label} Dept.`;
+document.getElementById("sidebarDeptTag").innerHTML =
+    `<span class="dept-tag" style="background:rgba(255,255,255,0.15);color:white;border-color:white;">${currentDept.icon} ${currentDept.label}</span>`;
+
+async function loadDashboard(){
+    try {
+        // Fetch all complaints and compute stats for this admin's
+        // department only (backend has no per-department endpoint).
+        const data = await OCMC.getAllComplaints();
+        const complaints = data.complaints || data || [];
+        const deptComplaints = complaints.filter(c => c.category === currentDept.category);
+
+        const total = deptComplaints.length;
+        const pending = deptComplaints.filter(c => c.status === "Pending").length;
+        const progress = deptComplaints.filter(c => c.status === "In Progress").length;
+        const closed = deptComplaints.filter(c => c.status === "Closed").length;
+
+        document.getElementById("total").innerText = total;
+        document.getElementById("pending").innerText = pending;
+        document.getElementById("progress").innerText = progress;
+        document.getElementById("closed").innerText = closed;
+    } catch (err) {
+        alert("⚠️ " + err.message);
+    }
+}
+
+loadDashboard();
+
+}
+</script>
+
+</body>
+</html>

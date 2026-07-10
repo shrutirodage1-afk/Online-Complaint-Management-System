@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Complaints</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6f9;
+}
+
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    padding-top: 20px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 15px 25px;
+    transition: .3s;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, .2);
+    transform: translateX(5px);
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid white;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #ee0979;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .1);
+    position: relative;
+}
+
+.card img {
+    width: 250px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    color: white;
+    background: #f59e0b;
+}
+
+.lang-switcher select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Styled Download Button */
+.btn-download {
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #ee0979;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    transition: 0.2s;
+}
+
+.btn-download:hover {
+    background: #ff6a00;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" class="active" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+   
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="header-container">
+        <h1 data-i18n="my_complaints_title">📋 My Complaints</h1>
+        <div class="lang-switcher">
+            <select id="langSelect">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="mr">मराठी</option>
+                <option value="es">Español</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="complaintsContainer"></div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        nav_dashboard: "🏠 Dashboard",
+        nav_submit: "📝 Submit Complaint",
+        nav_myComplaints: "📋 My Complaints",
+        nav_track: "🔍 Track Complaint",
+        nav_profile: "👤 Profile",
+       
+        nav_logout: "🚪 Logout",
+        my_complaints_title: "📋 My Complaints",
+        loading: "Loading...",
+        no_complaints: "No Complaints Found",
+        lbl_id: "ID",
+        lbl_title: "Title",
+        lbl_category: "Category",
+        lbl_description: "Description",
+        lbl_location: "Location",
+        lbl_date: "Date",
+        lbl_status: "Status",
+        btn_download: "📥 Download PDF"
+    },
+    hi: {
+        nav_dashboard: "🏠 डैशबोर्ड",
+        nav_submit: "📝 शिकायत दर्ज करें",
+        nav_myComplaints: "📋 मेरी शिकायतें",
+        nav_track: "🔍 शिकायत ट्रैक करें",
+        nav_profile: "👤 प्रोफ़ाइल",
+       
+        nav_logout: "🚪 लॉगआउट",
+        my_complaints_title: "📋 मेरी शिकायतें",
+        loading: "लोड हो रहा है...",
+        no_complaints: "कोई शिकायत नहीं मिली",
+        lbl_id: "आईडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "श्रेणी",
+        lbl_description: "विवरण",
+        lbl_location: "स्थान",
+        lbl_date: "दिनांक",
+        lbl_status: "स्थिति",
+        btn_download: "📥 पीडीएफ डाउनलोड करें"
+    },
+    mr: {
+        nav_dashboard: "🏠 डॅशबोर्ड",
+        nav_submit: "📝 तक्रार नोंदवा",
+        nav_myComplaints: "📋 माझ्या तक्रारी",
+        nav_track: "🔍 तक्रार ट्रॅक करा",
+        nav_profile: "👤 प्रोफाइल",
+      
+        nav_logout: "🚪 लॉगआउट",
+        my_complaints_title: "📋 माझ्या तक्रारी",
+        loading: "लोड होत आहे...",
+        no_complaints: "कोणत्याही तक्रारी आढळल्या नाहीत",
+        lbl_id: "आयडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "वर्ग",
+        lbl_description: "वर्णन",
+        lbl_location: "ठिकाण",
+        lbl_date: "दिनांक",
+        lbl_status: "स्थिती",
+        btn_download: "📥 तक्रार डाउनलोड करा"
+    },
+    es: {
+        nav_dashboard: "🏠 Panel",
+        nav_submit: "📝 Enviar Queja",
+        nav_myComplaints: "📋 Mis Quejas",
+        nav_track: "🔍 Rastrear Queja",
+        nav_profile: "👤 Perfil",
+       
+        nav_logout: "🚪 Cerrar Sesión",
+        my_complaints_title: "📋 Mis Quejas",
+        loading: "Cargando...",
+        no_complaints: "No se encontraron quejas",
+        lbl_id: "ID",
+        lbl_title: "Título",
+        lbl_category: "Categoría",
+        lbl_description: "Descripción",
+        lbl_location: "Ubicación",
+        lbl_date: "Fecha",
+        lbl_status: "Estado",
+        btn_download: "📥 Descargar PDF"
+    }
+};
+
+let rawComplaintsData = [];
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.documentElement.lang = lang;
+    renderComplaintsList(lang);
+}
+
+function renderComplaintsList(lang) {
+    const dict = translations[lang] || translations.en;
+    const container = document.getElementById("complaintsContainer");
+    
+    if (container.getAttribute('data-state') === 'loading') {
+        container.innerHTML = `<p>${dict.loading}</p>`;
+        return;
+    }
+    
+    if (rawComplaintsData.length === 0) {
+        container.innerHTML = `<h3>${dict.no_complaints}</h3>`;
+        return;
+    }
+
+    container.innerHTML = rawComplaintsData.map((c, index) => `
+        <div class="card" id="complaint-card-${index}">
+            <p><b>${dict.lbl_id}:</b> ${c.complaintId}</p>
+            <p><b>${dict.lbl_title}:</b> ${c.title}</p>
+            <p><b>${dict.lbl_category}:</b> ${c.category}</p>
+            <p><b>${dict.lbl_description}:</b> ${c.description || "-"}</p>
+            <p><b>${dict.lbl_location}:</b> ${c.location || "-"}</p>
+            <p><b>${dict.lbl_date}:</b> ${new Date(c.createdAt).toLocaleString()}</p>
+            <p><b>${dict.lbl_status}:</b> <span class="status">${c.status}</span></p>
+            ${c.image ? `<img src="${OCMC.imageUrl(c.image)}" crossorigin="anonymous">` : ""}
+            <br>
+            <button class="btn-download" onclick="downloadPDF(${index}, '${c.complaintId}')">
+                ${dict.btn_download}
+            </button>
+        </div>
+    `).join("");
+}
+
+// Function to handle PDF conversion and file download
+function downloadPDF(index, complaintId) {
+    const element = document.getElementById(`complaint-card-${index}`);
+    
+    // Configure PDF settings
+    const opt = {
+        margin:       10,
+        filename:     `Complaint_${complaintId}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true }, // useCORS is enabled to fetch external images safely
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Temporarily hide the button so it doesn't show up in the printed PDF
+    const downloadBtn = element.querySelector('.btn-download');
+    downloadBtn.style.display = 'none';
+
+    // Generate the PDF
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore the button visibility after download completes
+        downloadBtn.style.display = 'inline-flex';
+    });
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+OCMC.requireAuth();
+
+async function loadComplaints(){
+    const container = document.getElementById("complaintsContainer");
+    container.setAttribute('data-state', 'loading');
+    renderComplaintsList(langSelect.value);
+
+    try {
+        const data = await OCMC.getMyComplaints();
+        rawComplaintsData = data.complaints;
+        container.removeAttribute('data-state');
+    } catch (err) {
+        container.innerHTML = `<p style="color:red;">⚠️ ${err.message}</p>`;
+        return;
+    }
+    renderComplaintsList(langSelect.value);
+}
+
+applyTranslations(initialLang);
+window.onload = loadComplaints;
+</script>
+</body>
+</html>
