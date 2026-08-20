@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OCMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+        }
+
+        /* Login Card */
+        .login-container {
+            width: 400px;
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, .3);
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: .3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+        }
+
+        /* User Admin Tabs Balanced Configuration */
+        .role-switch {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 25px 0;
+            background: #f5f6fa;
+            padding: 6px;
+            border-radius: 30px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 25px;
+            border: none;
+            color: #778da9;
+            background: transparent;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: .3s ease;
+        }
+
+        /* Active Tab Styling */
+        .role-btn.active.user-btn {
+            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+        }
+
+        .role-btn.active.admin-btn {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            box-shadow: 0 4px 12px rgba(238, 9, 121, 0.3);
+        }
+
+        .role-btn:hover:not(.active) {
+            color: #415a77;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Dynamic Title Theme Colors */
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            color: #ee0979;
+            font-size: 32px;
+            transition: color 0.3s ease;
+        }
+
+        .logo.user-theme h1 {
+            color: #0072ff;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Inputs and Dropdown Selection styling */
+        .input-box {
+            margin-bottom: 18px;
+        }
+
+        .input-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .input-box input,
+        .input-box select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Input Focus Theme Tweaks */
+        .user-theme-input:focus {
+            border-color: #0072ff !important;
+        }
+
+        .admin-theme-input:focus {
+            border-color: #ee0979 !important;
+        }
+
+        /* Options */
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .options a {
+            color: #ee0979;
+            text-decoration: none;
+        }
+
+        .user-theme-text {
+            color: #0072ff !important;
+        }
+
+        /* Login Button dynamic gradients */
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .login-btn.user-gradient {
+            background: linear-gradient(135deg, #0072ff, #00c6ff);
+        }
+
+        .login-btn.user-gradient:hover {
+            box-shadow: 0 10px 20px rgba(0, 114, 255, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .login-btn.admin-gradient {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+        }
+
+        .login-btn.admin-gradient:hover {
+            box-shadow: 0 10px 20px rgba(238, 9, 121, .4);
+            transform: translateY(-4px);
+        }
+
+        /* Register Area */
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: #ee0979;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <a href="welcome.html" class="back-btn">← Back</a>
+
+        <div class="role-switch">
+            <button type="button" id="userTab" class="role-btn user-btn active">User Portal</button>
+            <button type="button" id="adminTab" class="role-btn admin-btn">Admin Portal</button>
+        </div>
+
+        <div class="logo user-theme" id="logoHeading">
+            <h1 id="portalTitle">User Login</h1>
+            <p>Online Complaint Management System</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-box">
+                <label>Email Address</label>
+                <input type="email" id="email" class="user-theme-input" placeholder="Enter Email" required>
+            </div>
+
+            <div class="input-box">
+                <label>Password</label>
+                <input type="password" id="password" class="user-theme-input" placeholder="Enter Password" required>
+            </div>
+
+            <div class="options">
+                <label>
+                    <input type="checkbox"> Remember Me
+                </label>
+                <a href="forgot-password.html" id="forgotLink" class="user-theme-text">Forgot Password?</a>
+            </div>
+
+            <button type="submit" id="submitBtn" class="login-btn user-gradient">Login</button>
+        </form>
+
+        <div class="register-link" id="registerBox">
+            Don't have an account? <a href="regist.html" id="registerLink" class="user-theme-text">Register</a>
+        </div>
+
+        <div class="footer">
+            © 2026 Online Complaint Management System
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        const userTab = document.getElementById("userTab");
+        const adminTab = document.getElementById("adminTab");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        // ---------------------------------------------------------------
+        // "Admin Portal" now just sends the person to the real admin
+        // login page (admin-login.html), which hits the actual backend
+        // (/api/auth/admin/login) against the seeded admin accounts in
+        // MongoDB. This page used to fake an admin login entirely on the
+        // frontend (hardcoded passwords, a dummy "ocms-admin-<dept>"
+        // token, no server call at all) — that path is removed since
+        // there's now a real, working admin login flow to use instead.
+        // ---------------------------------------------------------------
+        adminTab.addEventListener("click", () => {
+            window.location.href = "admin-login.html";
+        });
+
+        // This page now only ever handles the User Portal flow.
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+
+            try {
+                const data = await OCMC.loginUser(email, password);
+                OCMC.setSession(data.token, data.user);
+                alert("User Login Successful!");
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                alert("⚠️ " + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

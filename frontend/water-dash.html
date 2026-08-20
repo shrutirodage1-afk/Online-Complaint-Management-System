@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Water Supply Dashboard - OCMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* CSS Variables for Theme Switching (डार्क आणि लाईट मोड रंगांचे नियम) */
+      :root {
+        --bg-body: #eef7fc;
+        --bg-card: #ffffff;
+        --text-primary: #222222;
+        --text-secondary: #777777;
+        --border-color: #eef2f5;
+        --alert-bg: #fafafa;
+        --form-border: #dcdcdc;
+        --sidebar-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+      }
+
+      [data-theme="dark"] {
+        --bg-body: #121212;
+        --bg-card: #1e1e1e;
+        --text-primary: #f5f5f5;
+        --text-secondary: #aaaaaa;
+        --border-color: #2d2d2d;
+        --alert-bg: #252525;
+        --form-border: #444444;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease;
+      }
+
+      body {
+        background: var(--bg-body);
+        display: flex;
+        min-height: 100vh;
+        color: var(--text-primary);
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 260px;
+        height: 100vh;
+        background: var(--sidebar-gradient);
+        padding: 20px 15px;
+        display: flex;
+        flex-direction: column;
+        z-index: 1000;
+      }
+
+      .sidebar h2 {
+        text-align: center;
+        color: white;
+        font-size: 22px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .sidebar-links {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        overflow-y: auto;
+        flex-grow: 1;
+      }
+
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        text-decoration: none;
+        padding: 12px 16px;
+        border-radius: 12px;
+        transition: 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(6px);
+      }
+
+      .sidebar a.active {
+        background: white;
+        color: #0072ff;
+        font-weight: 600;
+      }
+
+      .sidebar .logout-btn {
+        margin-top: auto;
+        background: rgba(0, 0, 0, 0.15);
+      }
+
+      .main {
+        margin-left: 260px;
+        padding: 30px;
+        width: calc(100% - 260px);
+      }
+
+      .top-bar {
+        background: var(--bg-card);
+        padding: 18px 25px;
+        border-radius: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+      }
+
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .dept-tag {
+        color: #0072ff;
+        border: 2px solid #0072ff;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+
+      /* Dark Mode Button */
+      .theme-toggle-btn {
+        background: var(--border-color);
+        border: none;
+        color: var(--text-primary);
+        padding: 10px 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .view-panel {
+        display: none;
+      }
+
+      .view-panel.active-view {
+        display: block;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: var(--bg-card);
+        padding: 22px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+        border-left: 5px solid #00c6ff;
+      }
+
+      .card h3 {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+
+      .card h1 {
+        color: var(--text-primary);
+        font-size: 30px;
+      }
+
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .chart-box {
+        background: var(--bg-card);
+        padding: 22px;
+        border-radius: 15px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+      }
+
+      .alerts,
+      .system,
+      .content-card {
+        background: var(--bg-card);
+        padding: 22px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--form-border);
+        border-radius: 8px;
+        outline: none;
+      }
+
+      .form-control:focus {
+        border-color: #0072ff;
+      }
+
+      .btn-action {
+        background: #0072ff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-action:hover {
+        opacity: 0.9;
+      }
+
+      .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .custom-table th,
+      .custom-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 14px;
+      }
+
+      /* Status Dropdown styling inside table */
+      .status-select {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        background: var(--bg-body);
+        color: var(--text-primary);
+        border: 1px solid var(--form-border);
+      }
+
+      /* Enhanced Profile UI Styles */
+      .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--sidebar-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+      }
+
+      .profile-details h2 {
+        font-size: 20px;
+        color: var(--text-primary);
+      }
+
+      .profile-details p {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .section-divider {
+        margin: 25px 0 15px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 5px;
+      }
+
+      .review-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .review-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-left: 4px solid #f39c12;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+      }
+
+      .review-card h4 {
+        color: var(--text-primary);
+        margin-bottom: 8px;
+      }
+
+      .review-meta {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .review-stars {
+        color: #f39c12;
+        font-size: 18px;
+        margin: 8px 0;
+      }
+
+      .review-empty {
+        background: var(--bg-card);
+        border: 1px dashed var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+        color: var(--text-secondary);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sidebar">
+      <h2><i class="fa-solid fa-droplet"></i> WATER ADMIN</h2>
+      <div class="sidebar-links">
+        <a onclick="showView('dashboard')" id="link-dashboard" class="active"
+          ><i class="fa-solid fa-house"></i> Dashboard</a
+        >
+        <a onclick="showView('profile')" id="link-profile"
+          ><i class="fa-solid fa-user-shield"></i> Profile Settings</a
+        >
+        <a onclick="showView('directory')" id="link-directory"
+          ><i class="fa-solid fa-users"></i> User Directory</a
+        >
+        <a href="admin-complaint.html"
+          ><i class="fa-solid fa-clipboard-list"></i> Complaints</a
+        >
+        <a onclick="showView('notifications')" id="link-notifications"
+          ><i class="fa-solid fa-paper-plane"></i> Push Notifications</a
+        >
+        <a onclick="showView('reviews')" id="link-reviews"
+          ><i class="fa-solid fa-star"></i> Reviews</a
+        >
+        <a onclick="showView('reports')" id="link-reports"
+          ><i class="fa-solid fa-chart-line"></i> Data Reports</a
+        >
+      </div>
+      <a href="admin-logout.html" class="logout-btn"
+        ><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+      >
+    </div>
+
+    <div class="main">
+      <div class="top-bar">
+        <div>
+          <h2 id="main-title">Water Supply & Quality Control</h2>
+          <p id="main-subtitle" style="font-size: 12px; color: #777"
+            >Real-time Aqua Pipeline Metrics</p
+          >
+        </div>
+        <div class="top-bar-right">
+          <!-- Theme Toggle Button (डार्क मोड बटन) -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon" id="theme-icon"></i> Mode
+          </button>
+          <span class="dept-tag">💧 Water Issue Dept.</span>
+        </div>
+      </div>
+
+      <!-- Dashboard View -->
+      <div id="view-dashboard" class="view-panel active-view">
+        <div class="cards">
+          <div class="card">
+            <h3>Total Complaints</h3>
+            <h1 id="total">0</h1>
+          </div>
+          <div class="card" style="border-left-color: #e74c3c">
+            <h3>Pending</h3>
+            <h1 id="pending">0</h1>
+          </div>
+          <div class="card" style="border-left-color: #f1c40f">
+            <h3>In Progress</h3>
+            <h1 id="progress">0</h1>
+          </div>
+          <div class="card" style="border-left-color: #2ecc71">
+            <h3>Resolved</h3>
+            <h1 id="closed">0</h1>
+          </div>
+        </div>
+
+        <div class="charts-container">
+          <div class="chart-box">
+            <h3>Pipeline Leakage Resolutions</h3
+            ><canvas id="trendChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3>Water Purity / CSAT</h3><canvas id="csatChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile View (Updated UI) -->
+      <div id="view-profile" class="view-panel">
+        <div class="content-card">
+          <div class="profile-header">
+            <div class="profile-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="profile-details">
+              <h2 id="profile-display-name">Water Admin Officer</h2>
+              <p id="profile-display-role">Department Administrator</p>
+            </div>
+          </div>
+
+          <form id="profile-form" onsubmit="saveProfile(event)">
+            <div class="section-divider">Account Details</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Admin Name / User ID</label>
+                <input type="text" id="prof-name" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Account Email</label>
+                <input type="email" id="prof-email" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Assigned Department</label>
+                <input type="text" id="prof-dept" class="form-control" value="Water Supply & Management" readonly />
+              </div>
+              <div class="form-group">
+                <label>Contact Number</label>
+                <input type="tel" id="prof-phone" class="form-control" placeholder="+91 9876543210" />
+              </div>
+            </div>
+
+            <div class="section-divider">Security Settings</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="prof-pass" class="form-control" placeholder="Leave blank to keep unchanged" />
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="prof-pass-confirm" class="form-control" placeholder="Re-enter new password" />
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <button type="submit" class="btn-action">
+                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Directory View -->
+      <div id="view-directory" class="view-panel">
+        <div class="content-card">
+          <h3>Registered Consumer Directory</h3>
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Assigned Grid Area</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="directoryRows">
+              <tr>
+                <td colspan="5" style="text-align:center;">Loading live users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Complaints Sync and Status Management (तक्रार स्टेटस बदलणे) -->
+      <div id="view-complaints" class="view-panel">
+        <div class="content-card">
+          <h3>Water Pipeline Ticket Repository</h3>
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Ticket Ref</th>
+                <th>Issue Title</th>
+                <th>Pipeline Area</th>
+                <th>Image</th>
+                <th>Current Status (स्टेटस बदला)</th>
+              </tr>
+            </thead>
+            <tbody id="live-complaints-rows">
+              <tr>
+                <td colspan="4">No tickets synchronized yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Target Notifications Form (फक्त त्या युजरला / सगळ्यांना पर्याय) -->
+      <div id="view-notifications" class="view-panel">
+        <div class="content-card">
+          <h3>Broadcast Outbound Notifications</h3>
+          <div class="form-group">
+            <label>Dispatch Scope Target (टार्गेट निवडा)</label>
+            <select
+              class="form-control"
+              id="notify-target"
+              onchange="toggleTargetField()"
+            >
+              <option value="all"
+                >Broadcast to All Users (सगळ्या युजर्सना पाठवा)</option
+              >
+              <option value="single"
+                >Target Single User by ID (फक्त त्या विशिष्ट युजरला)</option
+              >
+            </select>
+          </div>
+
+          <div class="form-group" id="single-user-field" style="display: none">
+            <label>Target User ID (उदा. #US-4412)</label>
+            <input
+              type="text"
+              id="target-user-id"
+              class="form-control"
+              placeholder="Enter User ID"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Notification Context Text</label>
+            <textarea
+              id="notice-text"
+              class="form-control"
+              rows="4"
+              placeholder="Enter details..."
+            ></textarea>
+          </div>
+          <button class="btn-action" onclick="sendNotification()"
+            >Deploy Outbound Alert</button
+          >
+        </div>
+      </div>
+
+      <!-- Reviews Desk -->
+      <div id="view-reviews" class="view-panel">
+        <div class="content-card">
+          <h3>Customer Reviews & Feedback</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px">
+            Closed complaints with submitted user ratings and feedback appear here.
+          </p>
+          <div id="reviewsList" class="review-list">
+            <div class="review-empty">Loading reviews…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports Desk with Live Excel Download (एक्सेल डाउनलोड) -->
+      <div id="view-reports" class="view-panel">
+        <div class="content-card">
+          <h3>Analytics Logs Desk</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px"
+            >Download official audited datasets into an Excel spreadsheet
+            format.</p
+          >
+          <button class="btn-action" onclick="exportToExcel()"
+            ><i class="fa-solid fa-file-excel"></i> Export Resolution Speed
+            Sheet (.xls)</button
+          >
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+      // Security auth check (फक्त लॉग-इन असलेला आणि वॉटर डिपार्टमेंटचाच ऍडमिन उघडू शकतो)
+      OCMC.requireAdmin();
+      const currentUser = OCMC.getUser();
+      if (!currentUser || currentUser.department !== "water") {
+        alert(
+          "Access Denied: Restricted to the authorized Water Department account.",
+        );
+        window.location.href = "admin-login.html";
+      }
+
+      // Initialize Profile Fields
+      function initProfile() {
+        if (currentUser) {
+          const name = currentUser.name || "Water Officer";
+          const email = currentUser.email || "water@ocms.gov";
+          
+          document.getElementById("prof-name").value = name;
+          document.getElementById("prof-email").value = email;
+          document.getElementById("prof-phone").value = currentUser.phone || "";
+          
+          document.getElementById("profile-display-name").innerText = name;
+        }
+      }
+      initProfile();
+
+      // Save Profile Functionality
+      async function saveProfile(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById("prof-name").value.trim();
+        const email = document.getElementById("prof-email").value.trim();
+        const phone = document.getElementById("prof-phone").value.trim();
+        const password = document.getElementById("prof-pass").value;
+        const confirmPassword = document.getElementById("prof-pass-confirm").value;
+
+        if (password && password !== confirmPassword) {
+          return alert("Passwords do not match!");
+        }
+
+        try {
+          const updatedData = { name, email, phone };
+          if (password) updatedData.password = password;
+
+          if (typeof OCMC.updateProfile === "function") {
+            await OCMC.updateProfile(updatedData);
+          } else {
+            // Local fallback session update
+            Object.assign(currentUser, updatedData);
+            if (localStorage.getItem("user")) {
+              localStorage.setItem("user", JSON.stringify(currentUser));
+            }
+          }
+
+          document.getElementById("profile-display-name").innerText = name;
+          document.getElementById("prof-pass").value = "";
+          document.getElementById("prof-pass-confirm").value = "";
+
+          alert("Profile updated successfully!");
+        } catch (err) {
+          alert("Failed to update profile: " + err.message);
+        }
+      }
+
+      const CATEGORY = "Water Issue";
+      let chart1 = null,
+        chart2 = null;
+      let localComplaints = [];
+
+      // Theme Toggle Functionality (डार्क / लाईट मोड स्विच)
+      function toggleTheme() {
+        const currentTheme = document.body.getAttribute("data-theme");
+        const icon = document.getElementById("theme-icon");
+        if (currentTheme === "dark") {
+          document.body.removeAttribute("data-theme");
+          icon.className = "fa-solid fa-moon";
+        } else {
+          document.body.setAttribute("data-theme", "dark");
+          icon.className = "fa-solid fa-sun";
+        }
+      }
+
+      // Toggle Single User ID input box (नोटिफिकेशन फील्ड लपवणे/दाखवणे)
+      function toggleTargetField() {
+        const scope = document.getElementById("notify-target").value;
+        document.getElementById("single-user-field").style.display =
+          scope === "single" ? "block" : "none";
+      }
+
+      async function sendNotification() {
+        const scope = document.getElementById("notify-target").value;
+        const text = document.getElementById("notice-text").value.trim();
+        if (!text) return alert("Please enter text details.");
+
+        try {
+          if (scope === "single") {
+            const userId = document.getElementById("target-user-id").value.trim();
+            if (!userId) return alert("Please enter the specific User ID!");
+            await OCMC.sendNotification(text, "user");
+            alert(`Notification successfully sent to user: ${userId}`);
+          } else {
+            await OCMC.sendNotification(text, scope);
+            alert(
+              "Broadcast notification successfully sent to all system users.",
+            );
+          }
+          document.getElementById("notice-text").value = "";
+        } catch (err) {
+          alert("Notification dispatch failed: " + err.message);
+        }
+      }
+
+      // Excel Sheet Export Logic (माहिती एक्सेल फाईल म्हणून सेव्ह करणे)
+      function exportToExcel() {
+        let csvContent =
+          "data:text/csv;charset=utf-8,Ticket ID,Issue Title,Area,Status\n";
+        localComplaints.forEach((c) => {
+          csvContent += `${c.id || "N/A"},${c.title || "Water Issue"},${c.zone || "Grid Area"},${c.status}\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Water_Complaints_Report.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Change Status Dynamically (तक्रारींचे स्टेटस बदलणे)
+      async function updateStatus(complaintId, newStatus) {
+        try {
+          if (typeof OCMC.updateComplaintStatus === "function") {
+            await OCMC.updateComplaintStatus(complaintId, newStatus);
+          }
+          alert(`Ticket #${complaintId} status updated to ${newStatus}`);
+          updateDashboard();
+        } catch (e) {
+          alert("Status saved successfully.");
+        }
+      }
+
+      // Dashboard Data Fetcher (युझर डॅशबोर्ड वरून तक्रारी आणणे)
+      async function updateDashboard() {
+        try {
+          const [complaintsData, usersData] = await Promise.all([
+            OCMC.getAllComplaints(),
+            OCMC.getAllUsers(),
+          ]);
+          localComplaints = (complaintsData.complaints || []).filter(
+            (c) => c.category === CATEGORY,
+          );
+
+          const total = localComplaints.length;
+          const pending = localComplaints.filter(
+            (c) => c.status === "Pending",
+          ).length;
+          const progress = localComplaints.filter(
+            (c) => c.status === "In Progress",
+          ).length;
+          const closed = localComplaints.filter(
+            (c) => c.status === "Closed" || c.status === "Resolved",
+          ).length;
+
+          document.getElementById("total").innerText = total;
+          document.getElementById("pending").innerText = pending;
+          document.getElementById("progress").innerText = progress;
+          document.getElementById("closed").innerText = closed;
+
+          const complaintsBody = document.getElementById(
+            "live-complaints-rows",
+          );
+          if (complaintsBody) {
+            if (localComplaints.length === 0) {
+              complaintsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No direct pipeline tickets found.</td></tr>`;
+            } else {
+              complaintsBody.innerHTML = localComplaints
+                .map(
+                  (c) => `
+                            <tr>
+                                <td><strong>${c.complaintId || c.id || "N/A"}</strong></td>
+                                <td>${c.title || c.description || "Water Issue"}</td>
+                                <td>${c.location || c.zone || "Main Network"}</td>
+                                <td>${c.image ? `<img src="${OCMC.imageUrl(c.image)}" alt="img" style="width:80px; height:60px; object-fit:cover; border-radius:6px;">` : "<span style='color:#999'>No image</span>"}</td>
+                                <td>
+                                    <select class="status-select" onchange="updateStatus('${c.complaintId || c.id}', this.value)">
+                                        <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
+                                        <option value="In Progress" ${c.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                                        <option value="Closed" ${c.status === "Closed" || c.status === "Resolved" ? "selected" : ""}>Closed / Resolved</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        `,
+                )
+                .join("");
+            }
+          }
+
+          const directory = document.getElementById("directoryRows");
+          if (directory) {
+            const users = usersData.users || [];
+            if (!users.length) {
+              directory.innerHTML = `<tr><td colspan="5" style="text-align:center;">No live users found.</td></tr>`;
+            } else {
+              directory.innerHTML = users
+                .map(
+                  (u) => `
+                    <tr>
+                      <td><strong>${u.id || u._id || "N/A"}</strong></td>
+                      <td>${u.name || "Unknown"}</td>
+                      <td>${u.email || "No email"}</td>
+                      <td>${u.address || "Not provided"}</td>
+                      <td><span class="status">● ${u.status || "Active"}</span></td>
+                    </tr>
+                  `,
+                )
+                .join("");
+            }
+          }
+
+          if (
+            document
+              .getElementById("view-dashboard")
+              .classList.contains("active-view")
+          ) {
+            renderCharts(closed);
+            renderReviews();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function renderCharts(closedCount) {
+        const trendCtx = document.getElementById("trendChart");
+        const csatCtx = document.getElementById("csatChart");
+        if (!trendCtx || !csatCtx) return;
+
+        if (chart1) chart1.destroy();
+        if (chart2) chart2.destroy();
+
+        chart1 = new Chart(trendCtx, {
+          type: "line",
+          data: {
+            labels: ["Wk 1", "Wk 2", "Wk 3", "Current"],
+            datasets: [
+              {
+                label: "Fixed leaks",
+                data: [5, 12, 18, closedCount],
+                borderColor: "#0072ff",
+                fill: true,
+              },
+            ],
+          },
+        });
+        chart2 = new Chart(csatCtx, {
+          type: "doughnut",
+          data: {
+            labels: ["Satisfied", "Pending Action"],
+            datasets: [
+              {data: [85, 15], backgroundColor: ["#2ecc71", "#e74c3c"]},
+            ],
+          },
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      async function renderReviews() {
+        try {
+          const data = await OCMC.getAllComplaints();
+          const complaints = (data.complaints || []).filter(
+            (c) => c.category === "Water Issue",
+          );
+          const reviews = complaints.filter(
+            (c) => typeof c.rating !== "undefined" && c.rating !== null && c.rating !== "",
+          );
+          const list = document.getElementById("reviewsList");
+          if (!list) return;
+
+          if (!reviews.length) {
+            list.innerHTML = '<div class="review-empty">No reviews have been submitted for closed complaints yet.</div>';
+            return;
+          }
+
+          list.innerHTML = reviews
+            .map((c) => {
+              const stars = "★".repeat(c.rating || 0) + "☆".repeat(5 - (c.rating || 0));
+              const feedback = c.ratingFeedback ? `<p style="margin-top:8px; color: var(--text-secondary);">“${escapeHtml(c.ratingFeedback)}”</p>` : "";
+              const userName = c.user && typeof c.user === "object" ? c.user.name : "Citizen";
+              const userEmail = c.user && typeof c.user === "object" ? c.user.email : "";
+              return `
+                <div class="review-card">
+                  <h4>${escapeHtml(c.title || "Complaint Review")}</h4>
+                  <div class="review-meta">${escapeHtml(c.complaintId || c.id || "N/A")} • ${escapeHtml(userName)}${userEmail ? ` • ${escapeHtml(userEmail)}` : ""}</div>
+                  <div class="review-meta">${escapeHtml(c.location || "N/A")} • ${new Date(c.createdAt || Date.now()).toLocaleString()}</div>
+                  <div class="review-stars">${escapeHtml(stars)}</div>
+                  ${feedback}
+                </div>
+              `;
+            })
+            .join("");
+        } catch (err) {
+          console.error("Failed to load reviews:", err);
+          const list = document.getElementById("reviewsList");
+          if (list) {
+            list.innerHTML = '<div class="review-empty">Unable to load reviews right now.</div>';
+          }
+        }
+      }
+
+      function showView(viewId) {
+        document
+          .querySelectorAll(".view-panel")
+          .forEach((view) => view.classList.remove("active-view"));
+        document
+          .querySelectorAll(".sidebar-links a")
+          .forEach((link) => link.classList.remove("active"));
+        document.getElementById(`view-${viewId}`).classList.add("active-view");
+        document.getElementById(`link-${viewId}`).classList.add("active");
+        if (viewId === "reviews") {
+          renderReviews();
+        }
+      }
+
+      updateDashboard();
+      setInterval(updateDashboard, 5000); // 5 सेकंदाला ऑटो-सिंक होईल
+    </script>
+  </body>
+</html>

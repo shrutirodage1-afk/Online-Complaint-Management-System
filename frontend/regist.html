@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - OCMS</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+}
+
+.container {
+  width: 360px;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Back Button */
+.back-btn {
+  display: inline-block;
+  margin-bottom: 15px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.back-btn:hover {
+  transform: translateX(-3px);
+  box-shadow: 0 4px 10px rgba(238, 9, 121, 0.4);
+}
+
+h2 {
+  text-align: center;
+  color: #ee0979;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+input:focus {
+  border-color: #ee0979;
+  box-shadow: 0 0 6px rgba(238, 9, 121, 0.4);
+  outline: none;
+}
+/* Register Button */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.4s ease;
+}
+
+/* Hover Effect */
+.btn:hover {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 12px 25px rgba(0, 114, 255, 0.5);
+}
+
+/* Click Effect */
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px rgba(0, 114, 255, 0.3);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <a href="welcome.html" class="back-btn">← Back</a>
+
+  <h2>Register</h2>
+
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="tel" id="phone" placeholder="Mobile Number">
+  <input type="password" id="password" placeholder="Password">
+  <input type="password" id="confirmPassword" placeholder="Confirm Password">
+
+  <button class="btn" onclick="register()">
+  Register
+</button>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+
+// USER REGISTER (calls backend -> MongoDB)
+async function register() {
+  let name = document.getElementById("name").value.trim();
+  let email = document.getElementById("email").value.trim().toLowerCase();
+  let phone = document.getElementById("phone").value.trim();
+  let password = document.getElementById("password").value;
+  let confirmPassword = document.getElementById("confirmPassword").value;
+
+  if (!name || !email || !phone || !password || !confirmPassword) {
+    alert("⚠️ All fields are required!");
+    return;
+  }
+
+  if (phone.length !== 10 || isNaN(phone)) {
+    alert("⚠️ Enter a valid 10-digit mobile number!");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert("⚠️ Passwords do not match!");
+    return;
+  }
+
+  const allowedAdmins = [
+    "shrutirodage85@gmail.com",
+    "bharati12@gmail.com"
+  ];
+
+  try {
+    if (allowedAdmins.includes(email)) {
+      // Register as Admin
+      await OCMC.registerAdmin({
+        name,
+        email,
+        phone,
+        password,
+        confirmPassword
+      });
+
+      alert("✅ Admin Registered Successfully!");
+      window.location.href = "admin-login.html";
+
+    } else {
+      // Register as User
+      await OCMC.registerUser({
+        name,
+        email,
+        phone,
+        password,
+        confirmPassword
+      });
+
+      alert("✅ User Registered Successfully!");
+      window.location.href = "login.html";
+    }
+
+  } catch (err) {
+    alert("⚠️ " + err.message);
+  }
+}
+
+</script>
+
+</body>
+</html>

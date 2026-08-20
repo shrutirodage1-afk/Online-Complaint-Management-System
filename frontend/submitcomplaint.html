@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit Complaint</title>
+
+<style>
+:root {
+    --bg-color: #f4f6f9;
+    --container-bg: #ffffff;
+    --text-color: #333333;
+    --heading-color: #ee0979;
+    --border-color: #ddd;
+    --input-bg: #ffffff;
+    --sidebar-bg: linear-gradient(135deg, #ff6a00, #ee0979);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.15);
+    --popup-shadow: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --container-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --heading-color: #ff5252;
+    --border-color: #333333;
+    --input-bg: #2d2d2d;
+    --sidebar-bg: linear-gradient(135deg, #2c3e50, #000000);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.5);
+    --popup-shadow: rgba(0, 0, 0, 0.7);
+}
+
+body {
+    font-family: Poppins, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.message {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    padding: 30px;
+    background: var(--container-bg);
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px var(--popup-shadow);
+    z-index: 9999;
+    animation: popup .4s ease;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    border-radius: 50%;
+    background: #28a745;
+    color: white;
+    font-size: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.message h3 {
+    color: #28a745;
+    margin: 15px 0;
+    font-size: 22px;
+}
+
+.message p {
+    color: var(--text-color);
+}
+
+.close-btn {
+    width: auto;
+    padding: 10px 30px;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    border-radius: 10px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+@keyframes popup {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: var(--sidebar-bg);
+    padding-top: 20px;
+    transition: background 0.3s ease;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: var(--sidebar-text);
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    padding: 15px 25px;
+    transition: .3s;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, .2);
+    transform: translateX(5px);
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid white;
+}
+
+.container {
+    width: 500px;
+    margin: 50px auto 50px 300px;
+    background: var(--container-bg);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px var(--card-shadow);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+h2 {
+    text-align: center;
+    color: var(--heading-color);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* CAMERA & UPLOAD CONTROLS */
+.media-options {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.upload-box, .camera-btn-trigger {
+    flex: 1;
+    border: 2px dashed var(--heading-color);
+    padding: 12px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--container-bg);
+    font-weight: 500;
+    color: var(--heading-color);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.upload-box:hover, .camera-btn-trigger:hover {
+    opacity: 0.8;
+}
+
+.upload-box input {
+    display: none;
+}
+
+/* LIVE CAMERA STREAM CONTAINER */
+.camera-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    background: #000;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+#webcam {
+    width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.capture-btn {
+    margin-top: 10px;
+    background: var(--heading-color);
+    padding: 8px 20px;
+    width: auto;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+button:hover {
+    transform: scale(1.03);
+}
+
+#preview {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 10px;
+    display: none;
+}
+
+/* VOICE-TO-TEXT MIC BUTTON */
+.desc-wrapper {
+    position: relative;
+}
+
+.mic-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+
+.mic-btn.listening {
+    animation: pulseMic 1s infinite;
+    background: #e74c3c;
+}
+
+@keyframes pulseMic {
+    0% { box-shadow: 0 0 0 0 rgba(231,76,60,.6); }
+    70% { box-shadow: 0 0 0 12px rgba(231,76,60,0); }
+    100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+}
+
+/* Language & Theme Controls Header */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.controls-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.lang-switcher select, .theme-toggle button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.theme-toggle button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: auto;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" class="active" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+    <a href="notification.html" data-i18n="nav_notifications">🔔 Notifications</a>
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="container">
+
+    <div class="header-container">
+        <h2 data-i18n="form_title">Submit Complaint</h2>
+        <div class="controls-wrapper">
+            <div class="theme-toggle">
+                <button type="button" id="themeBtn">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText" data-i18n="theme_dark">Dark</span>
+                </button>
+            </div>
+            <div class="lang-switcher">
+                <select id="langSelect">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <form id="complaintForm">
+        <input type="text" id="title" placeholder="Complaint Title" required data-i18n-holder="place_title">
+
+        <select id="category" required>
+            <option value="" data-i18n="cat_select">Select Category</option>
+            <option value="Water Issue" data-i18n="cat_water">Water Issue</option>
+            <option value="Electricity" data-i18n="cat_electricity">Electricity</option>
+            <option value="Road Problem" data-i18n="cat_road">Road Problem</option>
+            <option value="Others" data-i18n="cat_others">Others</option>
+        </select>
+
+        <div class="desc-wrapper">
+            <textarea id="description" rows="4" placeholder="Complaint Description" required data-i18n-holder="place_desc"></textarea>
+            <button type="button" id="micBtn" class="mic-btn" title="Speak your complaint (voice-to-text)">🎤</button>
+        </div>
+
+        <input type="text" id="location" placeholder="Location" required data-i18n-holder="place_loc">
+
+        <input type="hidden" id="latitude">
+        <input type="hidden" id="longitude">
+
+        <button type="button" onclick="getCurrentLocation()" style="margin-bottom:10px;">
+            📍 Get Current Location
+        </button>
+
+        <div class="media-options">
+            <div class="upload-box">
+                <label style="cursor: pointer; width: 100%;">
+                    <span data-i18n="upload_label">📷 Upload Image</span>
+                    <input type="file" id="imageInput" accept="image/*">
+                </label>
+            </div>
+            <div class="camera-btn-trigger" id="startCameraBtn">
+                <span data-i18n="camera_label">📸 Take Photo</span>
+            </div>
+        </div>
+
+        <div class="camera-container" id="cameraContainer">
+            <video id="webcam" autoplay playsinline></video>
+            <button type="button" class="capture-btn" id="captureBtn">Capture</button>
+        </div>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <img id="preview">
+
+        <button type="submit" data-i18n="btn_submit">Submit Complaint</button>
+    </form>
+
+    <div class="message" id="msg">
+        <div class="success-icon">✓</div>
+        <h3>Complaint Submitted!</h3>
+        <p id="complaintId"></p>
+        <button class="close-btn" onclick="closeSuccess()">OK</button>
+    </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    // ===== Multi Language Configurations Dictionary Data =====
+    const translations = {
+        en: {
+            nav_dashboard: "🏠 Dashboard",
+            nav_submit: "📝 Submit Complaint",
+            nav_myComplaints: "📋 My Complaints",
+            nav_track: "🔍 Track Complaint",
+            nav_profile: "👤 Profile",
+            nav_notifications: "🔔 Notifications",
+            nav_logout: "🚪 Logout",
+            form_title: "Submit Complaint",
+            place_title: "Complaint Title",
+            cat_select: "Select Category",
+            cat_water: "Water Issue",
+            cat_electricity: "Electricity",
+            cat_road: "Road Problem",
+            cat_others: "Others",
+            place_desc: "Complaint Description",
+            place_loc: "Location",
+            upload_label: "📷 Upload Image",
+            camera_label: "📸 Take Photo",
+            btn_submit: "Submit Complaint",
+            success_msg: "✅ Complaint Submitted Successfully — ID: ",
+            theme_light: "Light",
+            theme_dark: "Dark"
+        },
+        hi: {
+            nav_dashboard: "🏠 डैशबोर्ड",
+            nav_submit: "📝 शिकायत दर्ज करें",
+            nav_myComplaints: "📋 मेरी शिकायतें",
+            nav_track: "🔍 शिकायत ट्रैक करें",
+            nav_profile: "👤 प्रोफ़ाइल",
+            nav_notifications: "🔔 सूचनाएं",
+            nav_logout: "🚪 लॉगआउट",
+            form_title: "शिकायत दर्ज करें",
+            place_title: "शिकायत का शीर्षक",
+            cat_select: "श्रेणी चुनें",
+            cat_water: "पानी की समस्या",
+            cat_electricity: "बिजली की समस्या",
+            cat_road: "सड़क की समस्या",
+            cat_others: "अन्य",
+            place_desc: "शिकायत का विवरण",
+            place_loc: "स्थान",
+            upload_label: "📷 छवि अपलोड करें",
+            camera_label: "📸 फोटो खींचे",
+            btn_submit: "शिकायत जमा करें",
+            success_msg: "✅ शिकायत सफलतापूर्वक दर्ज की गई — आईडी: ",
+            theme_light: "लाइट",
+            theme_dark: "डार्क"
+        },
+        mr: {
+            nav_dashboard: "🏠 डॅशबोर्ड",
+            nav_submit: "📝 तक्रार नोंदवा",
+            nav_myComplaints: "📋 माझ्या तक्रारी",
+            nav_track: "🔍 तक्रार ट्रॅक करा",
+            nav_profile: "👤 प्रोफाइल",
+            nav_notifications: "🔔 सूचना",
+            nav_logout: "🚪 लॉगआउट",
+            form_title: "तक्रार नोंदवा",
+            place_title: "तक्रारीचे शीर्षक",
+            cat_select: "वर्ग निवडा",
+            cat_water: "पाण्याची समस्या",
+            cat_electricity: "वीज समस्या",
+            cat_road: "रस्त्याची समस्या",
+            cat_others: "इतर",
+            place_desc: "तक्रारीचे वर्णन",
+            place_loc: "ठिकाण",
+            upload_label: "📷 फोटो अपलोड करा",
+            camera_label: "📸 फोटो काढा",
+            btn_submit: "तक्रार सादर करा",
+            success_msg: "✅ तक्रार यशस्वीरित्या नोंदवली गेली — आयडी: ",
+            theme_light: "लाइट",
+            theme_dark: "डार्क"
+        },
+        es: {
+            nav_dashboard: "🏠 Panel",
+            nav_submit: "📝 Enviar Queja",
+            nav_myComplaints: "📋 Mis Quejas",
+            nav_track: "🔍 Rastrear Queja",
+            nav_profile: "👤 Perfil",
+            nav_notifications: "🔔 Notificaciones",
+            nav_logout: "🚪 Cerrar Sesión",
+            form_title: "Enviar Queja",
+            place_title: "Título de la Queja",
+            cat_select: "Selecciona Categoría",
+            cat_water: "Problema de Agua",
+            cat_electricity: "Electricidad",
+            cat_road: "Problema de Carretera",
+            cat_others: "Otros",
+            place_desc: "Descripción de la Queja",
+            place_loc: "Ubicación",
+            upload_label: "📷 Subir Imagen",
+            camera_label: "📸 Tomar Foto",
+            btn_submit: "Enviar Queja",
+            success_msg: "✅ Queja Enviada con Éxito — ID: ",
+            theme_light: "Claro",
+            theme_dark: "Oscuro"
+        }
+    };
+
+    // ===== Dark / Light Theme Logic =====
+    const themeBtn = document.getElementById("themeBtn");
+    const themeIcon = document.getElementById("themeIcon");
+    const themeText = document.getElementById("themeText");
+
+    function getSavedTheme() {
+        return localStorage.getItem("ocms_theme") || "light";
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("ocms_theme", theme);
+        
+        if (theme === "dark") {
+            themeIcon.textContent = "☀️";
+            themeText.setAttribute("data-i18n", "theme_light");
+        } else {
+            themeIcon.textContent = "🌙";
+            themeText.setAttribute("data-i18n", "theme_dark");
+        }
+        applyTranslations(getSavedLang());
+    }
+
+    themeBtn.addEventListener("click", () => {
+        const currentTheme = getSavedTheme();
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        applyTheme(newTheme);
+    });
+
+    // Apply saved theme on page load
+    applyTheme(getSavedTheme());
+
+    // ===== Language Logic =====
+    function getSavedLang() {
+        return localStorage.getItem("ocms_lang") || "en";
+    }
+
+    function setSavedLang(lang) {
+        return localStorage.setItem("ocms_lang", lang);
+    }
+
+    function applyTranslations(lang) {
+        const dict = translations[lang] || translations.en;
+        
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            const key = el.getAttribute("data-i18n");
+            if (dict[key]) {
+                el.textContent = dict[key];
+            }
+        });
+
+        document.querySelectorAll("[data-i18n-holder]").forEach(el => {
+            const key = el.getAttribute("data-i18n-holder");
+            if (dict[key]) {
+                el.placeholder = dict[key];
+            }
+        });
+
+        document.documentElement.lang = lang;
+    }
+
+    const langSelect = document.getElementById("langSelect");
+    const initialLang = getSavedLang();
+    langSelect.value = initialLang;
+
+    langSelect.addEventListener("change", (e) => {
+        const lang = e.target.value;
+        setSavedLang(lang);
+        applyTranslations(lang);
+    });
+
+    applyTranslations(initialLang);
+
+    OCMC.requireAuth();
+
+    let imageFile = null;
+    let streamRef = null;
+
+    const video = document.getElementById("webcam");
+    const canvas = document.getElementById("canvas");
+    const cameraContainer = document.getElementById("cameraContainer");
+    const previewImg = document.getElementById("preview");
+
+    document.getElementById("imageInput").addEventListener("change", function(e){
+        stopCamera();
+        const file = e.target.files[0];
+        if(file){
+            imageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(event){
+                previewImg.src = event.target.result;
+                previewImg.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById("startCameraBtn").addEventListener("click", async function() {
+        previewImg.style.display = "none";
+        try {
+            streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            video.srcObject = streamRef;
+            cameraContainer.style.display = "flex";
+        } catch (err) {
+            alert("Unable to access camera. Please verify site permissions.");
+        }
+    });
+
+    document.getElementById("captureBtn").addEventListener("click", function() {
+        if (streamRef) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const dataUrl = canvas.toDataURL("image/jpeg");
+            previewImg.src = dataUrl;
+            previewImg.style.display = "block";
+
+            fetch(dataUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    imageFile = new File([blob], "snapshot.jpg", { type: "image/jpeg" });
+                });
+
+            stopCamera();
+        }
+    });
+
+    function stopCamera() {
+        if (streamRef) {
+            streamRef.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        cameraContainer.style.display = "none";
+    }
+
+    // ===== Feature: Voice-to-text for complaint description =====
+    (function setupVoiceToText(){
+        const micBtn = document.getElementById("micBtn");
+        const descriptionField = document.getElementById("description");
+        const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognitionCtor || !micBtn) {
+            if (micBtn) micBtn.style.display = "none";
+            return;
+        }
+
+        const langCodeMap = { en: "en-US", hi: "hi-IN", mr: "mr-IN", es: "es-ES" };
+        const recognition = new SpeechRecognitionCtor();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        let recognizing = false;
+
+        recognition.onstart = function(){
+            recognizing = true;
+            micBtn.classList.add("listening");
+            micBtn.textContent = "🔴";
+        };
+        recognition.onend = function(){
+            recognizing = false;
+            micBtn.classList.remove("listening");
+            micBtn.textContent = "🎤";
+        };
+        recognition.onerror = function(){
+            recognizing = false;
+            micBtn.classList.remove("listening");
+            micBtn.textContent = "🎤";
+        };
+        recognition.onresult = function(event){
+            let transcript = "";
+            for (let i = 0; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            descriptionField.value = (descriptionField.value.trim() ? descriptionField.value.trim() + " " : "") + transcript.trim();
+        };
+
+        micBtn.addEventListener("click", function(){
+            if (recognizing) {
+                recognition.stop();
+                return;
+            }
+            recognition.lang = langCodeMap[getSavedLang()] || "en-US";
+            try {
+                recognition.start();
+            } catch (e) {
+                // recognition may already be starting; ignore
+            }
+        });
+    })();
+
+    function getCurrentLocation(){
+        if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(
+                function(position){
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+
+                    document.getElementById("latitude").value = lat;
+                    document.getElementById("longitude").value = lon;
+                    document.getElementById("location").value = "Latitude: " + lat + ", Longitude: " + lon;
+                },
+                function(error){
+                    alert("Unable to get location. Please allow location permission.");
+                }
+            );
+        }else{
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    // ===== Feature: Duplicate complaint detector =====
+    async function submitComplaintForm(formData, form){
+        try {
+            const data = await OCMC.submitComplaint(formData);
+            const activeLang = getSavedLang();
+            const successString = translations[activeLang]?.success_msg || translations.en.success_msg;
+
+            document.getElementById("complaintId").innerText = successString + data.complaint.complaintId;
+
+            let successBox = document.getElementById("msg");
+            successBox.style.display = "block";
+
+            form.reset();
+            previewImg.style.display = "none";
+            imageFile = null;
+            stopCamera();
+        }
+        catch(err){
+            if (err.duplicate && err.existingComplaint) {
+                const ex = err.existingComplaint;
+                const proceed = confirm(
+                    "⚠️ A similar complaint may already be registered!\n\n" +
+                    "ID: " + ex.complaintId + "\n" +
+                    "Status: " + ex.status + "\n" +
+                    "Location: " + ex.location + "\n\n" +
+                    "Do you still want to submit this as a new complaint?"
+                );
+                if (proceed) {
+                    formData.set("force", "true");
+                    await submitComplaintForm(formData, form);
+                }
+                return;
+            }
+            alert("⚠️ " + err.message);
+        }
+    }
+
+    document.getElementById("complaintForm").addEventListener("submit", async function(e){
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("title", document.getElementById("title").value);
+        formData.append("category", document.getElementById("category").value);
+        formData.append("description", document.getElementById("description").value);
+        formData.append("location", document.getElementById("location").value);
+        formData.append("latitude", document.getElementById("latitude").value);
+        formData.append("longitude", document.getElementById("longitude").value);
+        if (imageFile) formData.append("image", imageFile);
+
+        await submitComplaintForm(formData, this);
+    });
+
+    function closeSuccess(){
+        document.getElementById("msg").style.display = "none";
+    }
+</script>
+</body>
+</html>

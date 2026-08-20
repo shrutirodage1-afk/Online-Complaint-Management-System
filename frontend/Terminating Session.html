@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Terminating Session...</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f4f6f7; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .loader-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; }
+        h3 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="loader-card">
+        <h3>Securing Administration Console...</h3>
+        <p>Clearing authorization state cache matrices and disconnecting tokens...</p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        (function executedLogoutProcedure() {
+            try {
+                // Wipe credentials via library hooks
+                if (typeof OCMC !== 'undefined' && typeof OCMC.logout === 'function') {
+                    OCMC.logout();
+                }
+                // Fallback direct web storage purges
+                localStorage.removeItem("ocms_user");
+                localStorage.removeItem("ocms_token");
+                sessionStorage.clear();
+            } catch (err) {
+                console.error("Storage cache purge error:", err);
+            } finally {
+                // Ensure immediate client redirection matrix locks state
+                setTimeout(() => {
+                    window.location.replace("admin-login.html");
+                }, 1200);
+            }
+        })();
+    </script>
+</body>
+</html>

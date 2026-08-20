@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - OCMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+        }
+
+        .login-container {
+            width: 400px;
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, .3);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: .3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+        }
+
+        .logo {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .logo h1 {
+            color: #ee0979;
+            font-size: 32px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-box {
+            margin-bottom: 18px;
+        }
+
+        .input-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .input-box input,
+        .input-box select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-box input:focus,
+        .input-box select:focus {
+            border-color: #ee0979;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .3s;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            box-shadow: 0 10px 20px rgba(238, 9, 121, .4);
+            transform: translateY(-4px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .switch-link a {
+            color: #ee0979;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <a href="welcome.html" class="back-btn">← Back</a>
+
+        <div class="logo">
+            <h1>Admin Login</h1>
+            <p>Online Complaint Management System</p>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="input-box">
+                <label>Choose Department</label>
+                <select id="departmentSelect" required>
+                    <option value="" disabled selected>-- Select Department --</option>
+                    <option value="electricity">Electricity Department</option>
+                    <option value="road">Road Department</option>
+                    <option value="water">Water Department</option>
+                    <option value="others">Others Department</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="Enter Email" readonly required>
+            </div>
+
+            <div class="input-box">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter Password" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="login-btn">Login</button>
+        </form>
+
+        <div class="switch-link">
+            Not an admin? <a href="login.html">User Login</a>
+        </div>
+
+        <div class="footer">
+            © 2026 Online Complaint Management System
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Department emails — used only to auto-fill the (read-only) email field.
+        // The actual password check now happens on the backend against the
+        // seeded admin accounts in MongoDB, not locally.
+        const departmentEmails = {
+            electricity: "shruu17@gmail.com",
+            road: "bharii15@gmail.com",
+            others: "sanika29@gmail.com",
+            water: "sau26@gmail.com"
+        };
+
+        const departmentSelect = document.getElementById("departmentSelect");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const submitBtn = document.getElementById("submitBtn");
+
+        departmentSelect.addEventListener("change", function () {
+            const dept = this.value;
+            if (departmentEmails[dept]) {
+                emailInput.value = departmentEmails[dept];
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        });
+
+        document.getElementById("adminLoginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const dept = departmentSelect.value;
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+
+            if (!dept) {
+                alert("Please choose a department first!");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Logging in...";
+
+            try {
+                // Real backend call — hits POST /api/auth/admin/login,
+                // validated against the seeded admin record in MongoDB.
+                const data = await OCMC.loginAdmin(email, password);
+
+                // data.user comes straight from the backend (sanitizeUser),
+                // so it already has the correct role/department/email.
+                OCMC.setSession(data.token, data.user);
+
+                alert("Admin Login Successful!");
+
+                if (dept === "electricity") window.location.href = "electricity-dash.html";
+                else if (dept === "road") window.location.href = "road-dash.html";
+                else if (dept === "others") window.location.href = "others-dash.html";
+                else if (dept === "water") window.location.href = "water-dash.html";
+            } catch (err) {
+                alert("⚠️ " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Login";
+            }
+        });
+    </script>
+</body>
+
+</html>

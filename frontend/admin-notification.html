@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Center - OCMS Admin</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            margin-bottom: 35px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            padding: 14px 16px;
+            margin: 6px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(6px);
+        }
+
+        .sidebar a.active {
+            background: white;
+            color: #ee0979;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* MAIN CONTENT AREA */
+        .main {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* TOP NAVIGATION BAR */
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .top-bar h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .admin-tag {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(238, 9, 121, 0.2);
+        }
+
+        /* DASHBOARD GRID CONTENT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1.1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* NOTIFICATION SENDER FORM CARD */
+        .notify-box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .notify-box h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5d6d7e;
+            margin-bottom: 8px;
+        }
+
+        /* INPUT CONTROLS */
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #d5dbdb;
+            background-color: #f8f9f9;
+            font-size: 14px;
+            color: #2c3e50;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select:focus,
+        textarea:focus {
+            border-color: #ee0979;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(238, 9, 121, 0.1);
+        }
+
+        textarea {
+            height: 140px;
+            resize: none;
+            line-height: 1.6;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 5px;
+        }
+
+        /* ACTION BUTTONS */
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(238, 9, 121, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(238, 9, 121, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* HISTORY SIDEBAR CARD */
+        .history-box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .history-box h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9f9;
+            border-left: 4px solid #ff6a00;
+            font-size: 13.5px;
+            color: #34495e;
+            line-height: 1.5;
+        }
+
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #95a5a6;
+            font-weight: 500;
+        }
+
+        .badge {
+            background: #eaf2f8;
+            color: #2980b9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>OCMS ADMIN</h2>
+        <div id="sidebarDeptTag" style="text-align:center; margin-bottom:25px;">
+            <span class="dept-tag"
+                style="background:rgba(255,255,255,0.15); color:white; border-color:white;">Loading...</span>
+        </div>
+
+        <a href="admin-dash.html">🏠 Dashboard</a>
+        <a href="admin-complaint.html">📋 Complaints</a>
+        <a href="admin-user.html">👥 Users List</a>
+        <a href="admin-report.html">📊 Reports & Analytics</a>
+        <a href="admin-notification.html" class="active">🔔 Notifications</a>
+        <a href="admin-department.html">🔁 Switch Department</a>
+        <a href="admin-logout.html" style="margin-top: auto; background: rgba(0,0,0,0.15);">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+
+        <div class="top-bar">
+            <h2>Notification Management</h2>
+            <div class="admin-tag">Live System</div>
+        </div>
+
+        <div class="dashboard-grid">
+
+            <div class="notify-box">
+                <h3>🔔 Broadcast New Announcement</h3>
+
+                <div class="form-group">
+                    <label for="target">Target Scope (Active Sessions Only)</label>
+                    <select id="target">
+                        <option value="active_all">📢 All Currently Logged-in Users & Staff</option>
+                        <option value="active_users">👥 Logged-in Citizens / Consumers Only</option>
+                        <option value="active_staff">🛠 Logged-in Department Operatives Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="msg">Notification Message</label>
+                    <textarea id="msg" maxlength="250"
+                        placeholder="Type administrative updates or system health announcements here..."
+                        oninput="updateCounter()"></textarea>
+                    <div class="char-counter" id="counter">0 / 250 characters</div>
+                </div>
+
+                <button onclick="sendNotification()">🚀 Dispatch Announcement</button>
+            </div>
+
+            <div class="history-box">
+                <h3>📋 Recent Despatches</h3>
+                <div class="history-list">
+                    <div class="history-item">
+                        <p>System maintenance scheduled for Sunday midnight. Expect minor dashboard access disruptions.
+                        </p>
+                        <div class="history-meta">
+                            <span class="badge">All Active</span>
+                            <span>Today, 11:24 AM</span>
+                        </div>
+                    </div>
+                    <div class="history-item" style="border-left-color: #ee0979;">
+                        <p>Water distribution complaint pipeline validation checks are running on schedule.</p>
+                        <div class="history-meta">
+                            <span class="badge" style="background: #fdebd0; color: #d35400;">Active Staff</span>
+                            <span>Yesterday, 04:15 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Authentication validation sequence
+        OCMC.requireAdmin();
+
+        function updateCounter() {
+            let msgInput = document.getElementById("msg");
+            let counter = document.getElementById("counter");
+            let count = msgInput.value.length;
+
+            counter.innerText = `${count} / 250 characters`;
+            if (count >= 250) {
+                counter.style.color = "#e74c3c";
+            } else {
+                counter.style.color = "#95a5a6";
+            }
+        }
+
+        async function sendNotification() {
+            let msg = document.getElementById("msg").value.trim();
+            let targetGroup = document.getElementById("target").value;
+
+            if (!msg) {
+                alert("⚠️ Please provide a message body before hitting dispatch.");
+                return;
+            }
+
+            try {
+                // The backend handling 'targetGroup' (active_all, active_users, active_staff) 
+                // must filter out offline users using WebSockets or session records.
+                await OCMC.sendNotification(msg, targetGroup);
+                alert("✨ Dynamic system bulletin deployed cleanly across active endpoints!");
+
+                document.getElementById("msg").value = "";
+                updateCounter();
+            } catch (err) {
+                alert("⚠️ Connection Failure: " + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

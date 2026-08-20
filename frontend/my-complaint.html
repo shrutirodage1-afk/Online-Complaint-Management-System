@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Complaints</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+:root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --heading-color: #ee0979;
+    --border-color: #ddd;
+    --input-bg: #ffffff;
+    --sidebar-bg: linear-gradient(135deg, #ff6a00, #ee0979);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    --proof-bg: #eafaf1;
+    --proof-border: #2ecc71;
+    --proof-text: #1a9e57;
+    --rating-bg: #fff8f2;
+    --reopen-bg: #fff3cd;
+    --reopen-border: #d97706;
+    --reopen-text: #92400e;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --heading-color: #ff5252;
+    --border-color: #333333;
+    --input-bg: #2d2d2d;
+    --sidebar-bg: linear-gradient(135deg, #2c3e50, #000000);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.5);
+    --proof-bg: #112d1f;
+    --proof-border: #2ecc71;
+    --proof-text: #2ecc71;
+    --rating-bg: #2d2418;
+    --reopen-bg: #332712;
+    --reopen-border: #f59e0b;
+    --reopen-text: #f59e0b;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: var(--sidebar-bg);
+    padding-top: 20px;
+    transition: background 0.3s ease;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: var(--sidebar-text);
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    padding: 15px 25px;
+    transition: .3s;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, .2);
+    transform: translateX(5px);
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid white;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.controls-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+h1 {
+    color: var(--heading-color);
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px var(--card-shadow);
+    position: relative;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card img {
+    width: 250px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    color: white;
+    background: #f59e0b;
+}
+
+.lang-switcher select, .theme-toggle button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.theme-toggle button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: auto;
+}
+
+/* PROOF PASSCODE */
+.proof-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--proof-bg);
+    border: 1px dashed var(--proof-border);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.proof-box code {
+    background: var(--input-bg);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--proof-text);
+}
+
+/* RATING */
+.rating-box {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--rating-bg);
+    border-radius: 10px;
+}
+
+.stars {
+    font-size: 26px;
+    cursor: pointer;
+    color: #f39c12;
+    user-select: none;
+}
+
+.stars .star {
+    padding: 0 2px;
+}
+
+.feedback-input {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+
+.btn-rate {
+    width: auto;
+    padding: 8px 18px;
+    background: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.rating-display {
+    margin-top: 10px;
+    color: #f39c12;
+    font-weight: 600;
+}
+
+/* REOPEN */
+.btn-reopen {
+    width: auto;
+    display: inline-block;
+    margin-top: 12px;
+    margin-left: 8px;
+    padding: 8px 18px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.reopen-note {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--reopen-bg);
+    border: 1px dashed var(--reopen-border);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--reopen-text);
+}
+
+/* Styled Download Button */
+.btn-download {
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #ee0979;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    transition: 0.2s;
+}
+
+.btn-download:hover {
+    background: #ff6a00;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" class="active" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+    <a href="notification.html" data-i18n="nav_notifications">🔔 Notifications</a>
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="header-container">
+        <h1 data-i18n="my_complaints_title">📋 My Complaints</h1>
+        <div class="controls-wrapper">
+            <div class="theme-toggle">
+                <button type="button" id="themeBtn">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText" data-i18n="theme_dark">Dark</span>
+                </button>
+            </div>
+            <div class="lang-switcher">
+                <select id="langSelect">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="complaintsContainer"></div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        nav_dashboard: "🏠 Dashboard",
+        nav_submit: "📝 Submit Complaint",
+        nav_myComplaints: "📋 My Complaints",
+        nav_track: "🔍 Track Complaint",
+        nav_profile: "👤 Profile",
+        nav_notifications: "🔔 Notifications",
+        nav_logout: "🚪 Logout",
+        my_complaints_title: "📋 My Complaints",
+        loading: "Loading...",
+        no_complaints: "No Complaints Found",
+        lbl_id: "ID",
+        lbl_title: "Title",
+        lbl_category: "Category",
+        lbl_description: "Description",
+        lbl_location: "Location",
+        lbl_date: "Date",
+        lbl_status: "Status",
+        btn_download: "📥 Download PDF",
+        lbl_proof: "🔑 Proof Passcode",
+        btn_rate: "Submit Rating",
+        feedback_placeholder: "Add feedback (optional)",
+        btn_reopen: "🔁 Reopen Complaint",
+        reopen_prompt: "Please describe why you're reopening this complaint:",
+        reopened_note: "Reopened by you",
+        rate_first: "Please select a star rating first.",
+        theme_light: "Light",
+        theme_dark: "Dark"
+    },
+    hi: {
+        nav_dashboard: "🏠 डैशबोर्ड",
+        nav_submit: "📝 शिकायत दर्ज करें",
+        nav_myComplaints: "📋 मेरी शिकायतें",
+        nav_track: "🔍 शिकायत ट्रैक करें",
+        nav_profile: "👤 प्रोफ़ाइल",
+        nav_notifications: "🔔 सूचनाएं",
+        nav_logout: "🚪 लॉगआउट",
+        my_complaints_title: "📋 मेरी शिकायतें",
+        loading: "लोड हो रहा है...",
+        no_complaints: "कोई शिकायत नहीं मिली",
+        lbl_id: "आईडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "श्रेणी",
+        lbl_description: "विवरण",
+        lbl_location: "स्थान",
+        lbl_date: "दिनांक",
+        lbl_status: "स्थिति",
+        btn_download: "📥 पीडीएफ डाउनलोड करें",
+        lbl_proof: "🔑 प्रमाण पासकोड",
+        btn_rate: "रेटिंग सबमिट करें",
+        feedback_placeholder: "प्रतिक्रिया जोड़ें (वैकल्पिक)",
+        btn_reopen: "🔁 शिकायत पुनः खोलें",
+        reopen_prompt: "कृपया बताएं कि आप यह शिकायत पुनः क्यों खोल रहे हैं:",
+        reopened_note: "आपने पुनः खोली",
+        rate_first: "कृपया पहले स्टार रेटिंग चुनें।",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    mr: {
+        nav_dashboard: "🏠 डॅशबोर्ड",
+        nav_submit: "📝 तक्रार नोंदवा",
+        nav_myComplaints: "📋 माझ्या तक्रारी",
+        nav_track: "🔍 तक्रार ट्रॅक करा",
+        nav_profile: "👤 प्रोफाइल",
+        nav_notifications: "🔔 सूचना",
+        nav_logout: "🚪 लॉगआउट",
+        my_complaints_title: "📋 माझ्या तक्रारी",
+        loading: "लोड होत आहे...",
+        no_complaints: "कोणत्याही तक्रारी आढळल्या नाहीत",
+        lbl_id: "आयडी",
+        lbl_title: "शीर्षक",
+        lbl_category: "वर्ग",
+        lbl_description: "वर्णन",
+        lbl_location: "ठिकाण",
+        lbl_date: "दिनांक",
+        lbl_status: "स्थिती",
+        btn_download: "📥 तक्रार डाउनलोड करा",
+        lbl_proof: "🔑 पुरावा पासकोड",
+        btn_rate: "रेटिंग सबमिट करा",
+        feedback_placeholder: "प्रतिक्रिया जोडा (ऐच्छिक)",
+        btn_reopen: "🔁 तक्रार पुन्हा उघडा",
+        reopen_prompt: "कृपया सांगा तुम्ही ही तक्रार पुन्हा का उघडत आहात:",
+        reopened_note: "तुम्ही पुन्हा उघडली",
+        rate_first: "कृपया आधी स्टार रेटिंग निवडा.",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    es: {
+        nav_dashboard: "🏠 Panel",
+        nav_submit: "📝 Enviar Queja",
+        nav_myComplaints: "📋 Mis Quejas",
+        nav_track: "🔍 Rastrear Queja",
+        nav_profile: "👤 Perfil",
+        nav_notifications: "🔔 Notificaciones",
+        nav_logout: "🚪 Cerrar Sesión",
+        my_complaints_title: "📋 Mis Quejas",
+        loading: "Cargando...",
+        no_complaints: "No se encontraron quejas",
+        lbl_id: "ID",
+        lbl_title: "Título",
+        lbl_category: "Categoría",
+        lbl_description: "Descripción",
+        lbl_location: "Ubicación",
+        lbl_date: "Fecha",
+        lbl_status: "Estado",
+        btn_download: "📥 Descargar PDF",
+        lbl_proof: "🔑 Código de Prueba",
+        btn_rate: "Enviar Calificación",
+        feedback_placeholder: "Añadir comentario (opcional)",
+        btn_reopen: "🔁 Reabrir Queja",
+        reopen_prompt: "Por favor describe por qué estás reabriendo esta queja:",
+        reopened_note: "Reabierta por ti",
+        rate_first: "Por favor selecciona una calificación primero.",
+        theme_light: "Claro",
+        theme_dark: "Oscuro"
+    }
+};
+
+let rawComplaintsData = [];
+
+// ===== Dark / Light Theme Logic =====
+const themeBtn = document.getElementById("themeBtn");
+const themeIcon = document.getElementById("themeIcon");
+const themeText = document.getElementById("themeText");
+
+function getSavedTheme() {
+    return localStorage.getItem("ocms_theme") || "light";
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("ocms_theme", theme);
+    
+    if (theme === "dark") {
+        themeIcon.textContent = "☀️";
+        themeText.setAttribute("data-i18n", "theme_light");
+    } else {
+        themeIcon.textContent = "🌙";
+        themeText.setAttribute("data-i18n", "theme_dark");
+    }
+    applyTranslations(getSavedLang());
+}
+
+themeBtn.addEventListener("click", () => {
+    const currentTheme = getSavedTheme();
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(newTheme);
+});
+
+// Apply theme on initial load
+applyTheme(getSavedTheme());
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.documentElement.lang = lang;
+    renderComplaintsList(lang);
+}
+
+function renderComplaintsList(lang) {
+    const dict = translations[lang] || translations.en;
+    const container = document.getElementById("complaintsContainer");
+    
+    if (container.getAttribute('data-state') === 'loading') {
+        container.innerHTML = `<p>${dict.loading}</p>`;
+        return;
+    }
+    
+    if (rawComplaintsData.length === 0) {
+        container.innerHTML = `<h3>${dict.no_complaints}</h3>`;
+        return;
+    }
+
+    container.innerHTML = rawComplaintsData.map((c, index) => `
+        <div class="card" id="complaint-card-${index}">
+            <p><b>${dict.lbl_id}:</b> ${c.complaintId}</p>
+            <p><b>${dict.lbl_title}:</b> ${c.title}</p>
+            <p><b>${dict.lbl_category}:</b> ${c.category}</p>
+            <p><b>${dict.lbl_description}:</b> ${c.description || "-"}</p>
+            <p><b>${dict.lbl_location}:</b> ${c.location || "-"}</p>
+            <p><b>${dict.lbl_date}:</b> ${new Date(c.createdAt).toLocaleString()}</p>
+            <p><b>${dict.lbl_status}:</b> <span class="status">${c.status}</span></p>
+            ${c.image ? `<img src="${OCMC.imageUrl(c.image)}" crossorigin="anonymous">` : ""}
+            ${buildResolutionSection(c, index, dict)}
+            <br>
+            <button class="btn-download" onclick="downloadPDF(${index}, '${c.complaintId}')">
+                ${dict.btn_download}
+            </button>
+        </div>
+    `).join("");
+}
+
+// ===== Features: Proof passcode / User rating / Reopen complaint =====
+let selectedStars = {};
+
+function buildResolutionSection(c, index, dict) {
+    if (c.status === "Closed") {
+        let html = `
+            <div class="proof-box">
+                <b>${dict.lbl_proof}:</b> <code>${c.resolutionCode || "-"}</code>
+            </div>
+        `;
+
+        if (c.rating) {
+            const filled = "★".repeat(c.rating);
+            const empty = "☆".repeat(5 - c.rating);
+            html += `
+                <div class="rating-display">
+                    ${filled}${empty}${c.ratingFeedback ? ` — "${c.ratingFeedback}"` : ""}
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="rating-box">
+                    <div class="stars" id="stars-${index}">
+                        ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}" onclick="setStar(${index}, ${n})">☆</span>`).join("")}
+                    </div>
+                    <input type="text" id="feedback-${index}" class="feedback-input" placeholder="${dict.feedback_placeholder}">
+                    <button type="button" class="btn-rate" onclick="submitRating(${index}, '${c.complaintId}')">${dict.btn_rate}</button>
+                </div>
+            `;
+        }
+
+        html += `
+            <button type="button" class="btn-reopen" onclick="reopenComplaint('${c.complaintId}')">
+                ${dict.btn_reopen}
+            </button>
+        `;
+        return html;
+    }
+
+    if (c.status === "Reopened") {
+        return `
+            <div class="reopen-note">
+                🔄 ${dict.reopened_note}${c.reopenReason ? `: "${c.reopenReason}"` : ""}
+            </div>
+        `;
+    }
+
+    return "";
+}
+
+function setStar(index, value) {
+    selectedStars[index] = value;
+    const starsContainer = document.getElementById(`stars-${index}`);
+    if (!starsContainer) return;
+    starsContainer.querySelectorAll(".star").forEach(el => {
+        el.textContent = Number(el.dataset.value) <= value ? "★" : "☆";
+    });
+}
+
+async function submitRating(index, complaintId) {
+    const dict = translations[getSavedLang()] || translations.en;
+    const value = selectedStars[index];
+    if (!value) {
+        alert(dict.rate_first);
+        return;
+    }
+    const feedback = document.getElementById(`feedback-${index}`).value;
+    try {
+        const data = await OCMC.rateComplaint(complaintId, value, feedback);
+        const idx = rawComplaintsData.findIndex(x => x.complaintId === complaintId);
+        if (idx !== -1) rawComplaintsData[idx] = data.complaint;
+        renderComplaintsList(getSavedLang());
+    } catch (err) {
+        alert("⚠️ " + err.message);
+    }
+}
+
+async function reopenComplaint(complaintId) {
+    const dict = translations[getSavedLang()] || translations.en;
+    const reason = prompt(dict.reopen_prompt);
+    if (!reason || !reason.trim()) return;
+    try {
+        const data = await OCMC.reopenComplaint(complaintId, reason.trim());
+        const idx = rawComplaintsData.findIndex(x => x.complaintId === complaintId);
+        if (idx !== -1) rawComplaintsData[idx] = data.complaint;
+        renderComplaintsList(getSavedLang());
+    } catch (err) {
+        alert("⚠️ " + err.message);
+    }
+}
+
+// Function to handle PDF conversion and file download
+function downloadPDF(index, complaintId) {
+    const element = document.getElementById(`complaint-card-${index}`);
+    
+    // Configure PDF settings
+    const opt = {
+        margin:       10,
+        filename:     `Complaint_${complaintId}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true }, // useCORS is enabled to fetch external images safely
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Temporarily hide the button so it doesn't show up in the printed PDF
+    const downloadBtn = element.querySelector('.btn-download');
+    downloadBtn.style.display = 'none';
+
+    // Generate the PDF
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore the button visibility after download completes
+        downloadBtn.style.display = 'inline-flex';
+    });
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+OCMC.requireAuth();
+
+async function loadComplaints(){
+    const container = document.getElementById("complaintsContainer");
+    container.setAttribute('data-state', 'loading');
+    renderComplaintsList(langSelect.value);
+
+    try {
+        const data = await OCMC.getMyComplaints();
+        rawComplaintsData = data.complaints;
+        container.removeAttribute('data-state');
+    } catch (err) {
+        container.innerHTML = `<p style="color:red;">⚠️ ${err.message}</p>`;
+        return;
+    }
+    renderComplaintsList(langSelect.value);
+}
+
+applyTranslations(initialLang);
+window.onload = loadComplaints;
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reports - OCMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            padding-top: 20px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            margin: 5px 10px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(8px);
+        }
+
+        .sidebar a.active {
+            background: white;
+            color: #ff2e88;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 250px;
+            padding: 25px;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #ee0979;
+        }
+
+        .kpi-card.resolved { border-left-color: #10b981; }
+        .kpi-card.pending { border-left-color: #f59e0b; }
+        .kpi-card.rate { border-left-color: #3b82f6; }
+
+        .kpi-card h3 {
+            font-size: 14px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .kpi-card p {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* Visualization Box */
+        .chart-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        /* Controls / Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-bar select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* Report Table Box */
+        .table-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-box h2 {
+            color: #ee0979;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        td {
+            padding: 14px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 15px;
+        }
+
+        tr:hover {
+            background: #fff2f8;
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(135deg, #3a7bd5, #3a6073);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.03);
+            opacity: 0.9;
+        }
+
+        /* Optimized Systemic Print Engine - Focus Only on Breakdown Table */
+        @media print {
+            .sidebar, 
+            .filter-bar, 
+            .kpi-container, 
+            .chart-box, 
+            .btn-group { 
+                display: none !important; 
+            }
+            
+            .main { 
+                margin-left: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important;
+            }
+
+            body {
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .table-box {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            th {
+                background: #ee0979 !important;
+                color: white !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>OCMS ADMIN</h2>
+        <div id="sidebarDeptTag" style="text-align:center; margin-bottom:25px;">
+            <span class="dept-tag" style="background:rgba(255,255,255,0.15); color:white; padding: 5px 15px; border-radius: 20px; font-size: 12px;">Loading...</span>
+        </div>
+
+        <a href="admin-dash.html">🏠 Dashboard</a>
+        <a href="admin-complaint.html">📋 Complaints</a>
+        <a href="admin-user.html">👥 Users List</a>
+        <a href="admin-report.html" class="active">📊 Reports & Analytics</a>
+        <a href="admin-notification.html">🔔 Notifications</a>
+        <a href="admin-department.html">🔁 Switch Department</a>
+        <a href="admin-logout.html" style="margin-top: auto; background: rgba(0,0,0,0.15);">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+        
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Total Complaints</h3>
+                <p id="kpiTotal">0</p>
+            </div>
+            <div class="kpi-card resolved">
+                <h3>Resolved Cases</h3>
+                <p id="kpiResolved" style="color: #10b981;">0</p>
+            </div>
+            <div class="kpi-card pending">
+                <h3>Pending / Open</h3>
+                <p id="kpiPending" style="color: #f59e0b;">0</p>
+            </div>
+            <div class="kpi-card rate">
+                <h3>Resolution Rate</h3>
+                <p id="kpiRate" style="color: #3b82f6;">0%</p>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div style="font-weight: 600; color: #444;">Analytics Filter Engine</div>
+            <div>
+                <label for="yearFilter" style="font-size: 14px; margin-right: 8px; color: #666;">Filter by Year:</label>
+                <select id="yearFilter" onchange="processAndRenderData()">
+                    <option value="all">All Years</option>
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <h3 style="color: #444; margin-bottom: 15px; font-size: 18px;">Performance Trend</h3>
+            <div style="max-height: 300px; position: relative;">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-box">
+            <h2>Monthly Breakdowns</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total Complaints</th>
+                        <th>Resolved (Closed)</th>
+                        <th>Pending / Progress</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr><td colspan="4">Loading runtime data...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="btn-group">
+                <button class="action-btn" onclick="window.print()">🖨️ Print Report</button>
+                <button class="action-btn secondary" onclick="exportToCSV()">📥 Export to CSV</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        if (typeof OCMC !== 'undefined' && OCMC.requireAuth) {
+            OCMC.requireAuth();
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let globalComplaintsData = []; 
+        let currentChartInstance = null;
+
+        async function loadReportMetrics() {
+            try {
+                if (typeof OCMC !== 'undefined' && typeof OCMC.getAllComplaints === 'function') {
+                    const data = await OCMC.getAllComplaints();
+                    globalComplaintsData = data.complaints || data;
+                } else if (typeof OCMC !== 'undefined' && typeof OCMC.getMyComplaints === 'function') {
+                    const data = await OCMC.getMyComplaints();
+                    globalComplaintsData = data.complaints || data;
+                } else {
+                    globalComplaintsData = [
+                        { createdAt: '2026-01-15', status: 'Closed' },
+                        { createdAt: '2026-01-20', status: 'Closed' },
+                        { createdAt: '2026-02-11', status: 'Pending' },
+                        { createdAt: '2026-02-25', status: 'Closed' },
+                        { createdAt: '2026-03-05', status: 'Pending' }
+                    ];
+                }
+            } catch (err) {
+                console.error("Failed to load analytics: ", err);
+                document.getElementById("reportTableBody").innerHTML = `<tr><td colspan="4" style="color:red">Failed loading statistics dashboard.</td></tr>`;
+                return;
+            }
+
+            processAndRenderData();
+        }
+
+        function processAndRenderData() {
+            const selectedYear = document.getElementById("yearFilter").value;
+            let monthlyMap = {};
+            let summary = { total: 0, resolved: 0, pending: 0 };
+
+            (globalComplaintsData || []).forEach(c => {
+                let dateObj = c.createdAt ? new Date(c.createdAt) : (c.date ? new Date(c.date) : new Date());
+                let itemYear = dateObj.getFullYear().toString();
+                
+                if (selectedYear !== 'all' && itemYear !== selectedYear) return;
+
+                let monthName = MONTH_NAMES[dateObj.getMonth()];
+
+                if (!monthlyMap[monthName]) {
+                    monthlyMap[monthName] = { total: 0, resolved: 0, active: 0 };
+                }
+
+                monthlyMap[monthName].total++;
+                summary.total++;
+                
+                if (c.status === 'Closed') {
+                    monthlyMap[monthName].resolved++;
+                    summary.resolved++;
+                } else {
+                    monthlyMap[monthName].active++;
+                    summary.pending++;
+                }
+            });
+
+            document.getElementById("kpiTotal").innerText = summary.total;
+            document.getElementById("kpiResolved").innerText = summary.resolved;
+            document.getElementById("kpiPending").innerText = summary.pending;
+            document.getElementById("kpiRate").innerText = summary.total > 0 ? Math.round((summary.resolved / summary.total) * 100) + '%' : '0%';
+
+            let tBody = document.getElementById("reportTableBody");
+            tBody.innerHTML = "";
+
+            if (Object.keys(monthlyMap).length === 0) {
+                tBody.innerHTML = `<tr><td colspan="4">No metrics available matching current filters.</td></tr>`;
+                updateDataChart([], [], []);
+                return;
+            }
+
+            let chartLabels = [];
+            let chartResolved = [];
+            let chartPending = [];
+
+            for (const month in monthlyMap) {
+                tBody.innerHTML += `
+                    <tr>
+                        <td><strong>${month}</strong></td>
+                        <td>${monthlyMap[month].total}</td>
+                        <td style="color:#10b981; font-weight:600">${monthlyMap[month].resolved}</td>
+                        <td style="color:#f59e0b; font-weight:600">${monthlyMap[month].active}</td>
+                    </tr>
+                `;
+                chartLabels.push(month);
+                chartResolved.push(monthlyMap[month].resolved);
+                chartPending.push(monthlyMap[month].active);
+            }
+
+            updateDataChart(chartLabels, chartResolved, chartPending);
+        }
+
+        function updateDataChart(labels, resolvedData, pendingData) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            
+            if (currentChartInstance) {
+                currentChartInstance.destroy();
+            }
+
+            currentChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Resolved (Closed)', data: resolvedData, backgroundColor: '#10b981' },
+                        { label: 'Pending / In Progress', data: pendingData, backgroundColor: '#f59e0b' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        function exportToCSV() {
+            let csvRows = [['Month', 'Total Complaints', 'Resolved', 'Pending']];
+            const rows = document.querySelectorAll("#reportTableBody tr");
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll("td");
+                if(cols.length === 4) {
+                    csvRows.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
+                }
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `OCMS_Report_${document.getElementById("yearFilter").value}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = loadReportMetrics;
+    </script>
+</body>
+</html>

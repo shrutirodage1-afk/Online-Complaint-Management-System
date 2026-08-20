@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Complaints - OCMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f7f7f7;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            padding: 12px 16px;
+            margin: 6px 0;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(6px);
+        }
+
+        .sidebar a.active {
+            background: white;
+            font-weight: 600;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+            width: calc(100% - 250px);
+        }
+
+        .top-bar {
+            background: white;
+            padding: 18px 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .dept-tag {
+            background: white;
+            border: 2px solid;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .search-filter-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            min-width: 220px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .table-box {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+            padding: 22px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            color: #777;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: .5px;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge.Pending {
+            background: #fdecea;
+            color: #e74c3c;
+        }
+
+        .badge.In-Progress {
+            background: #eaf3fc;
+            color: #3498db;
+        }
+
+        .badge.Closed {
+            background: #eafaf1;
+            color: #2ecc71;
+        }
+
+        .badge.Reopened {
+            background: #fff3cd;
+            color: #d97706;
+        }
+
+        select.status-select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        select.status-select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .empty-state,
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .badge.Fake {
+            background: #fce4e4;
+            color: #c0392b;
+        }
+
+        .fake-btn {
+            border: none;
+            background: #c0392b;
+            color: white;
+            padding: 7px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .fake-btn:hover {
+            background: #a93226;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <h2 id="sidebarTitle">ADMIN</h2>
+        <a id="dashLink" href="#">🏠 Dashboard</a>
+        <a href="admin-complaint.html" class="active">📋 Complaints</a>
+        <a href="admin-logout.html" style="margin-top: auto; background: rgba(0,0,0,0.15);">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="top-bar">
+            <div>
+                <h2 id="pageHeading">Complaints</h2>
+                <p style="font-size: 12px; color: #777;">Manage and update complaint status</p>
+            </div>
+
+            <div class="search-filter-box">
+                <input type="text" id="searchBar" class="search-input" onkeyup="renderTable()"
+                    placeholder="Search by ID or Area...">
+                <select id="statusFilter" class="filter-select" onchange="renderTable()">
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Reopened">Reopened</option>
+                    <option value="Fake">Fake</option>
+                </select>
+            </div>
+
+            <span class="dept-tag" id="deptTag">Dept.</span>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Complaint ID</th>
+                        <th>Area</th>
+                        <th>Description</th>
+                        <th>Image</th>
+                        <th>Submitted By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="complaintTableBody">
+                </tbody>
+            </table>
+            <div id="loadingState" class="loading-state">Loading complaints…</div>
+            <div id="emptyState" class="empty-state" style="display:none;">No complaints match your search/filter.</div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // ---------------------------------------------------------------
+        // 1. Real auth check. OCMC.requireAdmin() confirms a logged-in
+        //    admin session; the department below comes straight from the
+        //    real user record returned by the backend on login (User
+        //    model's `department` field: electricity | road | water | others),
+        //    not from parsing a hand-rolled localStorage token string.
+        // ---------------------------------------------------------------
+        OCMC.requireAdmin();
+
+        const currentUser = OCMC.getUser();
+        const validDepartments = ["electricity", "road", "water", "others"];
+        const department = currentUser && validDepartments.includes(currentUser.department)
+            ? currentUser.department
+            : null;
+
+        if (!department) {
+            alert("Access Denied: Please log in as an authorized department admin.");
+            window.location.href = "admin-login.html";
+        }
+
+        // ---------------------------------------------------------------
+        // 2. Per-department theme/labels + the department -> category
+        //    mapping. The Complaint model's `category` enum uses these
+        //    exact display strings ("Water Issue", "Road Problem", etc.),
+        //    which differ from the lowercase department values.
+        // ---------------------------------------------------------------
+        const deptConfig = {
+            electricity: {
+                category: "Electricity",
+                title: "Electricity Complaints",
+                sidebarTitle: "⚡ POWER ADMIN",
+                dashLink: "electricity-dash.html",
+                tagLabel: "⚡ Electricity Dept.",
+                gradient: "linear-gradient(135deg, #f1c40f, #d35400)",
+                accent: "#d35400"
+            },
+            road: {
+                category: "Road Problem",
+                title: "Road Complaints",
+                sidebarTitle: "🛣️ INFRA ADMIN",
+                dashLink: "road-dash.html",
+                tagLabel: "🛣️ Road Problem Dept.",
+                gradient: "linear-gradient(135deg, #7f8c8d, #2c3e50)",
+                accent: "#2c3e50"
+            },
+            water: {
+                category: "Water Issue",
+                title: "Water Complaints",
+                sidebarTitle: "💧 WATER ADMIN",
+                dashLink: "water-dash.html",
+                tagLabel: "💧 Water Dept.",
+                gradient: "linear-gradient(135deg, #56ccf2, #2f80ed)",
+                accent: "#2f80ed"
+            },
+            others: {
+                category: "Others",
+                title: "General Complaints",
+                sidebarTitle: "🗂️ GENERAL ADMIN",
+                dashLink: "others-dash.html",
+                tagLabel: "🗂️ Others Dept.",
+                gradient: "linear-gradient(135deg, #a29bfe, #6c5ce7)",
+                accent: "#6c5ce7"
+            }
+        };
+
+        const config = deptConfig[department];
+
+        // ---------------------------------------------------------------
+        // 3. Apply theme + content dynamically
+        // ---------------------------------------------------------------
+        document.getElementById("pageTitle").innerText = config.title + " - OCMS";
+        document.getElementById("pageHeading").innerText = config.title;
+        document.getElementById("sidebarTitle").innerText = config.sidebarTitle;
+        document.getElementById("dashLink").href = config.dashLink;
+        document.getElementById("deptTag").innerText = config.tagLabel;
+        document.getElementById("deptTag").style.color = config.accent;
+        document.getElementById("deptTag").style.borderColor = config.accent;
+
+        const sidebar = document.getElementById("sidebar");
+        sidebar.style.background = config.gradient;
+        document.querySelectorAll(".sidebar a.active").forEach(el => el.style.color = config.accent);
+
+        // ---------------------------------------------------------------
+        // 4. Real data — fetched from the backend and filtered to this
+        //    admin's department category. Re-fetched on a short interval
+        //    so newly submitted complaints show up without a manual reload.
+        // ---------------------------------------------------------------
+        let complaints = [];
+
+        async function loadComplaints() {
+            try {
+                const data = await OCMC.getAllComplaints();
+                complaints = (data.complaints || []).filter(c => c.category === config.category);
+                document.getElementById("loadingState").style.display = "none";
+                renderTable();
+            } catch (err) {
+                document.getElementById("loadingState").innerText = "Failed to load complaints: " + err.message;
+            }
+        }
+
+        function formatDate(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            return isNaN(d) ? iso : d.toLocaleDateString();
+        }
+
+        // ---------------------------------------------------------------
+        // 5. Table rendering — same search/filter logic as before, now
+        //    reading real field names: complaintId, location, description,
+        //    user.name, createdAt, status.
+        // ---------------------------------------------------------------
+        function renderTable() {
+            const query = document.getElementById("searchBar").value.toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value;
+
+            const filtered = complaints.filter(c => {
+                const idMatch = (c.complaintId || "").toLowerCase().includes(query);
+                const areaMatch = (c.location || "").toLowerCase().includes(query);
+                const matchesSearch = idMatch || areaMatch;
+                const matchesStatus = statusFilter === "all" || c.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            const tbody = document.getElementById("complaintTableBody");
+            const emptyState = document.getElementById("emptyState");
+            tbody.innerHTML = "";
+
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+                return;
+            }
+            emptyState.style.display = "none";
+
+                filtered.forEach(c => {
+                const badgeClass = c.status.replace(" ", "-");
+                const submittedBy = (c.user && c.user.name) ? c.user.name : "Unknown";
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${c.complaintId}</td>
+                    <td>${c.location}</td>
+                    <td style="max-width:320px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.description}</td>
+                    <td>${c.image ? `<img src="${OCMC.imageUrl(c.image)}" alt="img" style="width:80px; height:60px; object-fit:cover; border-radius:6px;">` : "<span style='color:#999'>No image</span>"}</td>
+                    <td>${submittedBy}</td>
+                    <td>${formatDate(c.createdAt)}</td>
+                    <td><span class="badge ${badgeClass}">${c.status}</span></td>
+                    <td>
+                        <div style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                            <select class="status-select" data-id="${c.complaintId}" onchange="updateStatus('${c.complaintId}', this)">
+                                <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
+                                <option value="In Progress" ${c.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                                <option value="Closed" ${c.status === "Closed" ? "selected" : ""}>Closed</option>
+                                <option value="Reopened" ${c.status === "Reopened" ? "selected" : ""} ${c.status !== "Reopened" ? "disabled" : ""}>Reopened</option>
+                                <option value="Fake" ${c.status === "Fake" ? "selected" : ""}>Fake</option>
+                            </select>
+                            <button class="fake-btn" type="button" onclick="markComplaintAsFake('${c.complaintId}')">${c.isFake ? "Fake Marked" : "Mark as Fake"}</button>
+                            ${c.isFake ? `<div style="font-size:11px;color:#c0392b;">⚠️ ${c.fakeReason || "Marked as fake"}</div>` : ""}
+                            ${c.status === "Reopened" && c.reopenReason ? `<div style="font-size:11px;color:#d97706;max-width:180px;">↺ ${c.reopenReason}</div>` : ""}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ---------------------------------------------------------------
+        // 6. Status updates now hit the real backend (PATCH
+        //    /api/complaints/:complaintId/status). On failure, the
+        //    dropdown is reset to the complaint's last known status so
+        //    the UI never shows a status that wasn't actually saved.
+        // ---------------------------------------------------------------
+        async function updateStatus(complaintId, selectEl) {
+            const newStatus = selectEl.value;
+            const complaint = complaints.find(c => c.complaintId === complaintId);
+            const previousStatus = complaint ? complaint.status : newStatus;
+
+            selectEl.disabled = true;
+            try {
+                await OCMC.updateComplaintStatus(complaintId, newStatus);
+                if (complaint) {
+                    complaint.status = newStatus;
+                    complaint.isFake = newStatus === "Fake";
+                }
+                renderTable();
+            } catch (err) {
+                alert("⚠️ Failed to update status: " + err.message);
+                selectEl.value = previousStatus;
+            } finally {
+                selectEl.disabled = false;
+            }
+        }
+
+        async function markComplaintAsFake(complaintId) {
+            const complaint = complaints.find(c => c.complaintId === complaintId);
+            const reason = prompt("Enter the reason this complaint is fake:");
+            if (!reason || !reason.trim()) {
+                alert("Please provide a reason before marking the complaint as fake.");
+                return;
+            }
+
+            const punishUser = confirm("Suspend this user account as punishment?");
+            try {
+                await OCMC.markComplaintFake(complaintId, reason.trim(), punishUser);
+                if (complaint) {
+                    complaint.status = "Fake";
+                    complaint.isFake = true;
+                    complaint.fakeReason = reason.trim();
+                    complaint.punishmentApplied = punishUser ? "Suspended" : "";
+                }
+                renderTable();
+                alert(punishUser
+                    ? "Complaint marked as fake and the user account was suspended."
+                    : "Complaint marked as fake and the user has been notified.");
+            } catch (err) {
+                alert("⚠️ Failed to mark complaint as fake: " + err.message);
+            }
+        }
+
+        loadComplaints();
+        setInterval(loadComplaints, 5000);
+    </script>
+</body>
+
+</html>

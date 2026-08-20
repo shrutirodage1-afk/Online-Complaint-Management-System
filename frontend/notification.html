@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications</title>
+
+<style>
+:root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --time-color: #777777;
+    --heading-color: #ee0979;
+    --border-color: #ddd;
+    --input-bg: #ffffff;
+    --sidebar-bg: linear-gradient(135deg, #ff6a00, #ee0979);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --time-color: #aaaaaa;
+    --heading-color: #ff5252;
+    --border-color: #333333;
+    --input-bg: #2d2d2d;
+    --sidebar-bg: linear-gradient(135deg, #2c3e50, #000000);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.4);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.sidebar{
+    width:230px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    background: var(--sidebar-bg);
+    padding-top:20px;
+    transition: background 0.3s ease;
+}
+
+.sidebar h2{
+    text-align:center;
+    color: var(--sidebar-text);
+    margin-bottom:30px;
+}
+
+.sidebar a{
+    display:block;
+    color: var(--sidebar-text);
+    text-decoration:none;
+    padding:15px 25px;
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,.2);
+    transform:translateX(5px);
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid white;
+}
+
+.main-content{
+    margin-left:250px;
+    padding:30px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.controls-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+h1{
+    color: var(--heading-color);
+}
+
+.notif-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px var(--card-shadow);
+    border-left: 5px solid var(--heading-color);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.notif-time {
+    font-size: 12px;
+    color: var(--time-color);
+    margin-top: 5px;
+}
+
+.lang-switcher select, .theme-toggle button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.theme-toggle button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: auto;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" data-i18n="nav_profile">👤 Profile</a>
+    <a href="notification.html" class="active" data-i18n="nav_notifications">🔔 Notifications</a>
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="header-container">
+        <h1 data-i18n="notif_title">🔔 Notifications</h1>
+        <div class="controls-wrapper">
+            <div class="theme-toggle">
+                <button type="button" id="themeBtn">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText" data-i18n="theme_dark">Dark</span>
+                </button>
+            </div>
+            <div class="lang-switcher">
+                <select id="langSelect">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationsContainer"></div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        nav_dashboard: "🏠 Dashboard",
+        nav_submit: "📝 Submit Complaint",
+        nav_myComplaints: "📋 My Complaints",
+        nav_track: "🔍 Track Complaint",
+        nav_profile: "👤 Profile",
+        nav_notifications: "🔔 Notifications",
+        nav_logout: "🚪 Logout",
+        notif_title: "🔔 Notifications",
+        loading: "Loading notifications...",
+        empty: "No new notifications found.",
+        theme_light: "Light",
+        theme_dark: "Dark"
+    },
+    hi: {
+        nav_dashboard: "🏠 डैशबोर्ड",
+        nav_submit: "📝 शिकायत दर्ज करें",
+        nav_myComplaints: "📋 मेरी शिकायतें",
+        nav_track: "🔍 शिकायत ट्रैक करें",
+        nav_profile: "👤 प्रोफ़ाइल",
+        nav_notifications: "🔔 सूचनाएं",
+        nav_logout: "🚪 लॉगआउट",
+        notif_title: "🔔 सूचनाएं",
+        loading: "सूचनाएं लोड हो रही हैं...",
+        empty: "कोई नई सूचना नहीं मिली।",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    mr: {
+        nav_dashboard: "🏠 डॅशबोर्ड",
+        nav_submit: "📝 तक्रार नोंदवा",
+        nav_myComplaints: "📋 माझ्या तक्रारी",
+        nav_track: "🔍 तक्रार ट्रॅक करा",
+        nav_profile: "👤 प्रोफाइल",
+        nav_notifications: "🔔 सूचना",
+        nav_logout: "🚪 लॉगआउट",
+        notif_title: "🔔 सूचना",
+        loading: "सूचना लोड होत आहेत...",
+        empty: "कोणतीही नवीन सूचना आढळली नाही.",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    es: {
+        nav_dashboard: "🏠 Panel",
+        nav_submit: "📝 Enviar Queja",
+        nav_myComplaints: "📋 Mis Quejas",
+        nav_track: "🔍 Rastrear Queja",
+        nav_profile: "👤 Perfil",
+        nav_notifications: "🔔 Notificaciones",
+        nav_logout: "🚪 Cerrar Sesión",
+        notif_title: "🔔 Notificaciones",
+        loading: "Cargando notificaciones...",
+        empty: "No se encontraron nuevas notificaciones.",
+        theme_light: "Claro",
+        theme_dark: "Oscuro"
+    }
+};
+
+let rawNotifs = [];
+
+// ===== Dark / Light Theme Logic =====
+const themeBtn = document.getElementById("themeBtn");
+const themeIcon = document.getElementById("themeIcon");
+const themeText = document.getElementById("themeText");
+
+function getSavedTheme() {
+    return localStorage.getItem("ocms_theme") || "light";
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("ocms_theme", theme);
+    
+    if (theme === "dark") {
+        themeIcon.textContent = "☀️";
+        themeText.setAttribute("data-i18n", "theme_light");
+    } else {
+        themeIcon.textContent = "🌙";
+        themeText.setAttribute("data-i18n", "theme_dark");
+    }
+    applyTranslations(getSavedLang());
+}
+
+themeBtn.addEventListener("click", () => {
+    const currentTheme = getSavedTheme();
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(newTheme);
+});
+
+// Apply theme on page load
+applyTheme(getSavedTheme());
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.documentElement.lang = lang;
+    renderNotifications(lang);
+}
+
+function renderNotifications(lang) {
+    const dict = translations[lang] || translations.en;
+    const container = document.getElementById("notificationsContainer");
+
+    if (container.getAttribute('data-state') === 'loading') {
+        container.innerHTML = `<p>${dict.loading}</p>`;
+        return;
+    }
+    if (rawNotifs.length === 0) {
+        container.innerHTML = `<p>${dict.empty}</p>`;
+        return;
+    }
+
+    container.innerHTML = rawNotifs.map(n => `
+        <div class="notif-card">
+            <p><b>${n.message}</b></p>
+            <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
+        </div>
+    `).join("");
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+OCMC.requireAuth();
+
+async function loadNotifications() {
+    const container = document.getElementById("notificationsContainer");
+    container.setAttribute('data-state', 'loading');
+    renderNotifications(langSelect.value);
+
+    try {
+        const data = await OCMC.getNotifications?.() || { notifications: [] };
+        rawNotifs = data.notifications || [];
+        container.removeAttribute('data-state');
+    } catch (err) {
+        container.innerHTML = `<p style="color:red;">⚠️ ${err.message}</p>`;
+        return;
+    }
+    renderNotifications(langSelect.value);
+}
+
+applyTranslations(initialLang);
+window.onload = loadNotifications;
+</script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome|OCMS</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+      body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background: linear-gradient(-45deg, #ff6a00, #ee0979, #ff8c42, #ff3d77);
+        background-size: 400% 400%;
+        animation: bg 10s ease infinite;
+      }
+
+      /* Animated Background */
+
+      @keyframes bg {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Floating Circles */
+
+      .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        animation: float 8s infinite linear;
+      }
+
+      .circle:nth-child(1) {
+        width: 220px;
+        height: 220px;
+        top: -60px;
+        left: -60px;
+      }
+
+      .circle:nth-child(2) {
+        width: 180px;
+        height: 180px;
+        bottom: -70px;
+        right: -40px;
+        animation-duration: 10s;
+      }
+
+      .circle:nth-child(3) {
+        width: 120px;
+        height: 120px;
+        top: 20%;
+        right: 15%;
+        animation-duration: 7s;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-25px) rotate(180deg);
+        }
+        100% {
+          transform: translateY(0px) rotate(360deg);
+        }
+      }
+
+      /* Main Card */
+
+      .container {
+        width: 850px;
+        padding: 50px;
+        border-radius: 25px;
+
+        background: rgba(255, 255, 255, 0.15);
+
+        backdrop-filter: blur(18px);
+
+        border: 1px solid rgba(255, 255, 255, 0.25);
+
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+        text-align: center;
+
+        color: white;
+
+        z-index: 2;
+
+        animation: zoom 0.8s;
+      }
+
+      @keyframes zoom {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .logo {
+        font-size: 70px;
+        margin-bottom: 15px;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      h1 {
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 20px;
+        margin-bottom: 25px;
+        opacity: 0.95;
+      }
+
+      p {
+        font-size: 17px;
+        line-height: 1.8;
+        margin-bottom: 35px;
+      }
+
+      /* Buttons */
+
+      .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 25px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        text-decoration: none;
+        padding: 16px 38px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: 0.4s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Login */
+
+      .login {
+        background: #fff;
+        color: #ee0979;
+      }
+
+      .login:hover {
+        transform: translateY(-8px) scale(1.05);
+
+        box-shadow:
+          0 0 25px white,
+          0 0 45px rgba(255, 255, 255, 0.7);
+      }
+
+      /* Register */
+
+      .register {
+        background: linear-gradient(45deg, #ff6a00, #ee0979);
+        color: white;
+        border: 2px solid white;
+      }
+
+      .register:hover {
+        transform: translateY(-8px) scale(1.05);
+
+        box-shadow:
+          0 0 20px #ff6a00,
+          0 0 45px #ee0979;
+      }
+
+      /* Ripple Hover */
+
+      .btn::before {
+        content: "";
+
+        position: absolute;
+
+        width: 0;
+
+        height: 0;
+
+        background: rgba(255, 255, 255, 0.3);
+
+        border-radius: 50%;
+
+        top: 50%;
+
+        left: 50%;
+
+        transform: translate(-50%, -50%);
+
+        transition: 0.6s;
+      }
+      .btn:hover::before {
+        width: 350px;
+        height: 350px;
+      }
+
+      .footer {
+        margin-top: 40px;
+
+        font-size: 14px;
+
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="container">
+      <div class="logo">🛡️</div>
+
+      <h1>Welcome to OCMS</h1>
+
+      <div class="subtitle"> Online Complaint Management System </div>
+      <p>
+        Raise complaints, monitor progress, and receive timely updates with our
+        secure and user-friendly complaint management platform.
+      </p>
+      <div class="buttons">
+        <a href="login.html" class="btn login">Login</a>
+        <a href="regist.html" class="btn register">Register</a>
+      </div>
+      <div class="footer"> © 2026 Online Complaint Management System </div>
+    </div>
+  </body>
+</html>

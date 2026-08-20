@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electricity Dashboard - OCMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        transition:
+          background 0.25s ease,
+          color 0.25s ease,
+          border-color 0.25s ease,
+          transform 0.2s ease;
+      }
+
+      :root {
+        --bg-color: #fffdf4;
+        --sidebar-bg: linear-gradient(135deg, #f1c40f, #d35400);
+        --card-bg: #ffffff;
+        --text-color: #1a1a1a;
+        --text-light: #6b7280;
+        --border-color: rgba(211, 84, 0, 0.08);
+        --alert-bg: #fefcf0;
+        --input-bg: #ffffff;
+        --shadow: 0 10px 30px rgba(211, 84, 0, 0.04);
+        --accent: #d35400;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: #0e0e0e;
+        --card-bg: #161616;
+        --text-color: #f3f4f6;
+        --text-light: #9ca3af;
+        --border-color: rgba(255, 255, 255, 0.05);
+        --alert-bg: #1e1b15;
+        --input-bg: #1f1f1f;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      body {
+        background: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Modernized Electric Ambient Background */
+      .bg-glow {
+        position: fixed;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(
+          circle,
+          rgba(241, 196, 15, 0.08) 0%,
+          rgba(211, 84, 0, 0) 70%
+        );
+        top: -10%;
+        right: -5%;
+        z-index: -1;
+        pointer-events: none;
+        animation: pulse 8s infinite alternate;
+      }
+
+      .bg-glow-2 {
+        position: fixed;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(
+          circle,
+          rgba(211, 84, 0, 0.05) 0%,
+          rgba(0, 0, 0, 0) 70%
+        );
+        bottom: -10%;
+        left: 20%;
+        z-index: -1;
+        pointer-events: none;
+        animation: pulse 12s infinite alternate-reverse;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1) translate(0, 0);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(1.1) translate(20px, -20px);
+          opacity: 1;
+        }
+      }
+
+      /* Premium Sidebar */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        background: var(--sidebar-bg);
+        padding: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        box-shadow: 5px 0 25px rgba(211, 84, 0, 0.15);
+      }
+
+      .sidebar h2 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: white;
+        font-size: 20px;
+        letter-spacing: 1px;
+        font-weight: 700;
+        margin-bottom: 35px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        padding: 14px 18px;
+        margin: 6px 0;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .sidebar a i {
+        font-size: 16px;
+        width: 20px;
+      }
+
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateX(4px);
+      }
+
+      .sidebar a.active {
+        background: white;
+        color: #d35400;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .main {
+        margin-left: 280px;
+        padding: 40px;
+        width: calc(100% - 280px);
+        max-width: 1600px;
+      }
+
+      .page-section {
+        display: none;
+        animation: fadeIn 0.4s ease forwards;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .page-section.active-page {
+        display: block;
+      }
+
+      /* Modern Glassmorphic Top Bar */
+      .top-bar {
+        background: var(--card-bg);
+        padding: 20px 30px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        margin-bottom: 35px;
+      }
+
+      .top-bar h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .dept-tag {
+        background: transparent;
+        color: #d35400;
+        border: 1.5px solid #d35400;
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .admin-tag {
+        background: linear-gradient(135deg, #f1c40f, #d35400);
+        color: white;
+        padding: 7px 16px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(211, 84, 0, 0.2);
+      }
+
+      .theme-toggle-btn {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      }
+      .theme-toggle-btn:hover {
+        transform: scale(1.05);
+      }
+
+      /* Dashboard Stat Cards Redesign */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 25px;
+        margin-bottom: 35px;
+      }
+
+      .card {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        border-top: 4px solid #f1c40f;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(241, 196, 15, 0.02),
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      .card h3 {
+        font-size: 13px;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      .card h1 {
+        color: var(--text-color);
+        font-size: 36px;
+        font-weight: 700;
+      }
+
+      .card h1.bump {
+        animation: bumpVal 0.5s ease;
+      }
+      @keyframes bumpVal {
+        0% {
+          transform: scale(1);
+          color: var(--text-color);
+        }
+        35% {
+          transform: scale(1.12);
+          color: #d35400;
+        }
+        100% {
+          transform: scale(1);
+          color: var(--text-color);
+        }
+      }
+
+      /* Grid Charts Container */
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 30px;
+        margin-bottom: 35px;
+      }
+
+      .chart-box {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+      }
+
+      .chart-box h3,
+      .alerts h3,
+      .system h3,
+      .form-box h3,
+      .data-box h3 {
+        color: var(--text-color);
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        position: relative;
+        padding-left: 12px;
+      }
+      .chart-box h3::before,
+      .alerts h3::before,
+      .system h3::before,
+      .form-box h3::before,
+      .data-box h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 3px;
+        bottom: 3px;
+        width: 4px;
+        background: #d35400;
+        border-radius: 2px;
+      }
+
+      canvas {
+        width: 100% !important;
+        max-height: 280px;
+      }
+
+      /* Layout Grid Elements */
+      .info-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+      }
+
+      .alerts,
+      .system,
+      .form-box,
+      .data-box {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        margin-bottom: 30px;
+      }
+
+      /* Modernized Alert Items */
+      .alert {
+        padding: 14px 18px;
+        border-radius: 10px;
+        border-left: 4px solid #f1c40f;
+        margin: 12px 0;
+        background: var(--alert-bg);
+        font-size: 14px;
+        font-weight: 500;
+        border-top: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .status {
+        color: #2ecc71;
+        font-weight: 600;
+      }
+
+      /* Beautiful Clean Form Inputs */
+      .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-color);
+      }
+
+      .form-control {
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--text-color);
+        font-size: 14px;
+        outline: none;
+      }
+      .form-control:focus {
+        border-color: #d35400;
+        box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.1);
+      }
+
+      .radio-group {
+        display: flex;
+        gap: 24px;
+        margin-top: 4px;
+      }
+
+      .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .radio-option input[type="radio"] {
+        accent-color: #d35400;
+        width: 16px;
+        height: 16px;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #f1c40f, #d35400);
+        color: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(211, 84, 0, 0.2);
+      }
+      .btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(211, 84, 0, 0.25);
+      }
+
+      .btn.btn-outline {
+        background: transparent;
+        color: #d35400;
+        border: 1.5px solid #d35400;
+        box-shadow: none;
+      }
+
+      /* Modernized Clean Tables */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        text-align: left;
+        font-size: 14px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .data-table th {
+        background: var(--alert-bg);
+        color: #d35400;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .data-table tbody tr:hover {
+        background: rgba(211, 84, 0, 0.02);
+      }
+
+      /* Live indicator */
+      .live-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2ecc71;
+        margin-right: 6px;
+        box-shadow: 0 0 0 rgba(46, 204, 113, 0.6);
+        animation: livePulse 1.6s infinite;
+      }
+      @keyframes livePulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.55);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+        }
+      }
+
+      .last-sync {
+        font-size: 12px;
+        color: var(--text-light);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Redesigned Premium Profile Section */
+      .profile-wrapper {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 35px;
+        align-items: start;
+      }
+
+      .profile-badge-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        padding: 35px 25px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-badge-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(
+          135deg,
+          rgba(241, 196, 15, 0.15),
+          rgba(211, 84, 0, 0.15)
+        );
+        border-bottom: 1px solid var(--border-color);
+        z-index: 1;
+      }
+
+      .avatar-container {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: 30px auto 20px;
+        z-index: 2;
+      }
+
+      .avatar-glow-ring {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 32px;
+        background: linear-gradient(135deg, #f1c40f, #d35400);
+        animation: rotateGlow 6s linear infinite;
+        opacity: 0.8;
+      }
+
+      @keyframes rotateGlow {
+        0% {
+          transform: rotate(0deg);
+          filter: blur(2px);
+        }
+        50% {
+          filter: blur(5px);
+        }
+        100% {
+          transform: rotate(360deg);
+          filter: blur(2px);
+        }
+      }
+
+      .avatar-square {
+        width: 100%;
+        height: 100%;
+        border-radius: 28px;
+        background: var(--card-bg);
+        padding: 4px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .avatar-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #f1c40f, #d35400);
+        color: white;
+        font-size: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .profile-badge-card h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 6px;
+      }
+
+      .profile-badge-card .badge-tag {
+        display: inline-block;
+        background: rgba(211, 84, 0, 0.08);
+        color: #d35400;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 25px;
+      }
+
+      .badge-meta {
+        border-top: 1px dashed var(--border-color);
+        padding-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        text-align: left;
+      }
+
+      .badge-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        color: var(--text-light);
+      }
+
+      .badge-meta-item i {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--bg-color);
+        color: #d35400;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        border: 1px solid var(--border-color);
+      }
+
+      .badge-meta-item span {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-left: auto;
+      }
+
+      /* Profile activity stat pills */
+      .profile-stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .profile-stat-pill {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 8px;
+        text-align: center;
+      }
+      .profile-stat-pill .num {
+        font-size: 18px;
+        font-weight: 700;
+        color: #d35400;
+      }
+      .profile-stat-pill .lbl {
+        font-size: 10px;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        font-weight: 600;
+      }
+
+      .profile-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-top: 10px;
+      }
+
+      .info-cell {
+        background: var(--bg-color);
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+      }
+
+      .info-cell label {
+        display: block;
+        font-size: 12px;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .info-cell p {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .info-cell.editable input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-color);
+        outline: none;
+        padding: 0;
+        border-bottom: 1px dashed transparent;
+      }
+      .info-cell.editable input:focus {
+        border-bottom-color: #d35400;
+      }
+      .info-cell.editable input:disabled {
+        color: var(--text-color);
+        cursor: default;
+      }
+
+      .profile-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .search-box-wrapper {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        max-width: 400px;
+      }
+
+      .review-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .review-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-left: 4px solid #f39c12;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .review-card h4 {
+        color: var(--text-color);
+        margin-bottom: 8px;
+      }
+
+      .review-meta {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-bottom: 8px;
+      }
+
+      .review-stars {
+        color: #f39c12;
+        font-size: 18px;
+        margin: 8px 0;
+      }
+
+      .review-empty {
+        background: var(--card-bg);
+        border: 1px dashed var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+        color: var(--text-light);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="sidebar">
+      <h2>⚡ POWER ADMIN</h2>
+      <a onclick="switchPage('dashboard')" id="nav-dashboard" class="active"
+        ><i class="fa-solid fa-house"></i> Dashboard</a
+      >
+      <a onclick="switchPage('notifications')" id="nav-notifications"
+        ><i class="fa-solid fa-bell"></i> Notifications</a
+      >
+      <a onclick="switchPage('users')" id="nav-users"
+        ><i class="fa-solid fa-users"></i> User Directory</a
+      >
+      <a onclick="switchPage('reports')" id="nav-reports"
+        ><i class="fa-solid fa-file-excel"></i> Reports</a
+      >
+      <a onclick="switchPage('reviews')" id="nav-reviews"
+        ><i class="fa-solid fa-star"></i> Reviews</a
+      >
+      <a onclick="switchPage('profile')" id="nav-profile"
+        ><i class="fa-solid fa-user-shield"></i> Admin Profile</a
+      >
+      <a href="admin-complaint.html"
+        ><i class="fa-solid fa-clipboard-list"></i> Complaints</a
+      >
+      <a
+        href="admin-logout.html"
+        style="margin-top: auto; background: rgba(0, 0, 0, 0.1)"
+        ><i class="fa-solid fa-door-open"></i> Logout</a
+      >
+    </div>
+
+    <div class="main">
+      <div class="top-bar">
+        <div>
+          <h2 id="page-title">Electricity Grid Dashboard</h2>
+          <p
+            style="font-size: 13px; color: var(--text-light)"
+            id="page-subtitle"
+            >Real-time Power Complaint Analytics</p
+          >
+        </div>
+        <div class="top-bar-right">
+          <span class="last-sync"
+            ><span class="live-dot"></span>Updated
+            <span id="lastSyncTime">just now</span></span
+          >
+          <button
+            class="theme-toggle-btn"
+            onclick="toggleTheme()"
+            title="Toggle Dark/Light Mode"
+          >
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+          </button>
+          <span class="dept-tag">⚡ Electricity Dept.</span>
+          <div class="admin-tag">● Live Grid</div>
+        </div>
+      </div>
+
+      <div id="page-dashboard" class="page-section active-page">
+        <div class="cards">
+          <div class="card" onclick="switchPage('reports')">
+            <h3>Total Complaints</h3>
+            <h1 id="total">0</h1>
+          </div>
+          <div class="card" style="border-top-color: #e74c3c">
+            <h3>Pending</h3>
+            <h1 id="pending">0</h1>
+          </div>
+          <div class="card" style="border-top-color: #3498db">
+            <h3>In Progress</h3>
+            <h1 id="progress">0</h1>
+          </div>
+          <div class="card" style="border-top-color: #2ecc71">
+            <h3>Resolved</h3>
+            <h1 id="closed">0</h1>
+          </div>
+        </div>
+
+        <div class="charts-container">
+          <div class="chart-box">
+            <h3>Power Restoration Trends</h3><canvas id="trendChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3>Consumer Satisfaction</h3><canvas id="csatChart"></canvas>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="alerts">
+            <h3>Grid Alerts</h3>
+            <div id="gridAlertsList">
+              <div class="alert"
+                >⚠ Transformer overload reported in Sector 4</div
+              >
+              <div class="alert" style="border-left-color: #2ecc71"
+                >✔ Substation sync successful</div
+              >
+            </div>
+          </div>
+          <div class="system">
+            <h3>Grid Health</h3>
+            <p style="margin-bottom: 12px; font-size: 14px"
+              >Feeder Status: <span class="status">Stable</span></p
+            >
+            <p style="margin-bottom: 12px; font-size: 14px"
+              >Uptime: <span class="status" id="uptimeStat">99.85%</span></p
+            >
+            <p style="font-size: 14px"
+              >Live Load: <span class="status" id="liveLoadStat">—</span></p
+            >
+          </div>
+        </div>
+      </div>
+
+      <div id="page-notifications" class="page-section">
+        <div class="form-box">
+          <h3>Broadcast Live Notification</h3>
+          <form id="notificationForm" onsubmit="sendNotification(event)">
+            <div class="form-group">
+              <label>Target Audience</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input
+                    type="radio"
+                    name="targetAudience"
+                    value="all"
+                    checked
+                  />
+                  All Users (Public Broadcast)
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="targetAudience" value="loggedin" />
+                  Logged In Users Only
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Message Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="notifTitle"
+                placeholder="e.g., Scheduled Maintenance"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Detailed Message Context</label>
+              <textarea
+                class="form-control"
+                id="notifMessage"
+                rows="4"
+                placeholder="Write power alert or notice updates here..."
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn"
+              ><i class="fa-solid fa-paper-plane"></i> Send Notification</button
+            >
+          </form>
+        </div>
+      </div>
+
+      <div id="page-users" class="page-section">
+        <div class="data-box">
+          <h3>Active Portal Sessions (User Directory)</h3>
+          <p
+            style="
+              font-size: 13px;
+              color: var(--text-light);
+              margin-bottom: 15px;
+            "
+            >Real-time user accounts currently synchronized via client
+            logins.</p
+          >
+
+          <div class="search-box-wrapper">
+            <input
+              type="text"
+              class="form-control"
+              id="userSearchInput"
+              onkeyup="filterUsersTable()"
+              placeholder="🔍 Search consumer name or zone..."
+            />
+          </div>
+
+          <div style="overflow-x: auto">
+            <table class="data-table" id="usersDirectoryTable">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Registered Zone/Area</th>
+                  <th>Session Status</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-reports" class="page-section">
+        <div class="data-box">
+          <h3>Export Data & Operations Analytics</h3>
+          <p
+            style="
+              margin-bottom: 20px;
+              color: var(--text-light);
+              font-size: 14px;
+            "
+            >Generate complete system data logging into certified Excel formats
+            (.xlsx) for audits.</p
+          >
+          <button
+            onclick="downloadComplaintsExcel()"
+            class="btn"
+            style="
+              background: linear-gradient(135deg, #2ecc71, #27ae60);
+              box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+            "
+            ><i class="fa-solid fa-file-excel"></i> Download Complaints Log
+            (.xlsx)</button
+          >
+        </div>
+      </div>
+
+      <div id="page-reviews" class="page-section">
+        <div class="data-box">
+          <h3>Customer Reviews & Feedback</h3>
+          <p style="margin-bottom: 16px; color: var(--text-light); font-size: 14px;">
+            Closed complaints with submitted user ratings and feedback appear here.
+          </p>
+          <div id="reviewsList" class="review-list">
+            <div class="review-empty">Loading reviews…</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-profile" class="page-section">
+        <div class="profile-wrapper">
+          <div class="profile-badge-card">
+            <div class="avatar-container">
+              <div class="avatar-glow-ring"></div>
+              <div class="avatar-square">
+                <div class="avatar-inner">
+                  <i class="fa-solid fa-user-shield"></i>
+                </div>
+              </div>
+            </div>
+            <h2 id="profileName">Admin User</h2>
+            <span class="badge-tag" id="profileDept">Electricity Admin</span>
+
+            <div class="profile-stat-row">
+              <div class="profile-stat-pill">
+                <div class="num" id="statHandled">0</div>
+                <div class="lbl">Handled</div>
+              </div>
+              <div class="profile-stat-pill">
+                <div class="num" id="statPendingMine">0</div>
+                <div class="lbl">Pending</div>
+              </div>
+              <div class="profile-stat-pill">
+                <div class="num" id="statResponse">—</div>
+                <div class="lbl">Avg. Time</div>
+              </div>
+            </div>
+
+            <div class="badge-meta">
+              <div class="badge-meta-item">
+                <i class="fa-solid fa-shield-halved"></i> Security Status
+                <span class="status">Enforced</span>
+              </div>
+              <div class="badge-meta-item">
+                <i class="fa-solid fa-terminal"></i> Clearance
+                <span style="color: #d35400">Level-3</span>
+              </div>
+              <div class="badge-meta-item">
+                <i class="fa-solid fa-clock-rotate-left"></i> Last Login
+                <span id="profileLastLogin">Today</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-box" style="margin-bottom: 0">
+            <h3>System Identity Particulars</h3>
+            <p
+              style="
+                font-size: 13px;
+                color: var(--text-light);
+                margin-bottom: 20px;
+              "
+              >Detailed infrastructure permissions tied securely to this control
+              terminal.</p
+            >
+
+            <div class="profile-info-grid">
+              <div class="info-cell">
+                <label>Account Scope</label>
+                <p id="profileScope">Department Administrator</p>
+              </div>
+              <div class="info-cell">
+                <label>Assigned Node</label>
+                <p>Main Corporate Grid HQ</p>
+              </div>
+              <div class="info-cell editable">
+                <label>Contact Email</label>
+                <input
+                  type="email"
+                  id="profileEmail"
+                  value="admin@electricity.ocms.gov"
+                  disabled
+                />
+              </div>
+              <div class="info-cell editable">
+                <label>Contact Phone</label>
+                <input
+                  type="tel"
+                  id="profilePhone"
+                  value="+91 98765 43210"
+                  disabled
+                />
+              </div>
+              <div class="info-cell">
+                <label>Server Access Matrix</label>
+                <p>Read-Write-Broadcast</p>
+              </div>
+              <div class="info-cell">
+                <label>Authentication Token</label>
+                <p
+                  style="
+                    font-family: monospace;
+                    font-size: 13px;
+                    color: #2ecc71;
+                  "
+                  >Active (SSL Secured)</p
+                >
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              <button
+                class="btn"
+                id="editProfileBtn"
+                onclick="toggleProfileEdit()"
+                ><i class="fa-solid fa-pen"></i> Edit Contact Details</button
+              >
+              <button class="btn btn-outline" onclick="switchPage('dashboard')"
+                ><i class="fa-solid fa-arrow-left"></i> Back to
+                Dashboard</button
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+      // 1. Session and Auth Restrictions
+      OCMC.requireAdmin();
+
+      const currentUser = OCMC.getUser();
+      if (!currentUser || currentUser.department !== "electricity") {
+        alert(
+          "Access Denied: Restricted to the authorized Electricity Department account.",
+        );
+        window.location.href = "admin-login.html";
+      }
+
+      // Setup Admin Profile Details
+      if (currentUser) {
+        document.getElementById("profileName").innerText =
+          currentUser.name || "Grid Admin";
+        document.getElementById("profileDept").innerText =
+          currentUser.department.toUpperCase() + " Head Admin";
+        if (currentUser.email)
+          document.getElementById("profileEmail").value = currentUser.email;
+        if (currentUser.phone)
+          document.getElementById("profilePhone").value = currentUser.phone;
+        document.getElementById("profileLastLogin").innerText =
+          new Date().toLocaleString();
+      }
+
+      const CATEGORY = "Electricity";
+      let chart1 = null,
+        chart2 = null;
+      let cachedComplaints = [];
+      let currentClosedCount = 0;
+      let currentPendingCount = 0;
+      let profileEditing = false;
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      // 2. Multipage Routing Controller
+      function switchPage(pageId) {
+        document
+          .querySelectorAll(".page-section")
+          .forEach((p) => p.classList.remove("active-page"));
+        document
+          .querySelectorAll(".sidebar a")
+          .forEach((a) => a.classList.remove("active"));
+
+        document.getElementById(`page-${pageId}`).classList.add("active-page");
+        document.getElementById(`nav-${pageId}`).classList.add("active");
+
+        // Dynamic Heading Titles
+        const titleMap = {
+          dashboard: [
+            "Electricity Grid Dashboard",
+            "Real-time Power Complaint Analytics",
+          ],
+          notifications: [
+            "Alert Distribution Center",
+            "Broadcast notifications directly to customer devices",
+          ],
+          users: [
+            "User Management Directory",
+            "Live tracking of consumers connected to electricity portal",
+          ],
+          reports: [
+            "Management Information System (MIS)",
+            "Export validated complaints dataset into worksheets",
+          ],
+          reviews: [
+            "Customer Reviews",
+            "Review board for closed complaints and citizen feedback",
+          ],
+          profile: [
+            "Administrator Identification",
+            "Account settings and systemic node privileges",
+          ],
+        };
+
+        document.getElementById("page-title").innerText = titleMap[pageId][0];
+        document.getElementById("page-subtitle").innerText =
+          titleMap[pageId][1];
+      }
+
+      // 3. Modernized Dark Mode Engine (With Chart Dynamic Retrigger Refresh)
+      function toggleTheme() {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const targetTheme = currentTheme === "dark" ? "light" : "dark";
+
+        document.documentElement.setAttribute("data-theme", targetTheme);
+        const icon = document.getElementById("theme-icon");
+
+        if (targetTheme === "dark") {
+          icon.className = "fa-solid fa-sun";
+        } else {
+          icon.className = "fa-solid fa-moon";
+        }
+
+        // Instantly sync layout configuration styles in chart options parameters
+        renderCharts(currentClosedCount);
+      }
+
+      // 4. Notification Engine
+      async function sendNotification(e) {
+        e.preventDefault();
+        const scope = document.querySelector(
+          'input[name="targetAudience"]:checked',
+        ).value;
+        const title = document.getElementById("notifTitle").value.trim();
+        const msg = document.getElementById("notifMessage").value.trim();
+
+        if (!msg) {
+          alert("Please enter a notification message.");
+          return;
+        }
+
+        try {
+          await OCMC.sendNotification(`${title ? `${title}\n` : ""}${msg}`, scope);
+          alert(
+            `Broadcast Initiated Successfully!\nTarget: ${scope === "all" ? "All System Users" : "Authenticated Logged-in Users Only"}\nTitle: ${title || "Department Update"}`,
+          );
+          document.getElementById("notificationForm").reset();
+        } catch (err) {
+          alert("Notification dispatch failed: " + err.message);
+        }
+      }
+
+      // 4b. Profile Edit Toggle
+      function toggleProfileEdit() {
+        profileEditing = !profileEditing;
+        const emailInput = document.getElementById("profileEmail");
+        const phoneInput = document.getElementById("profilePhone");
+        const btn = document.getElementById("editProfileBtn");
+
+        emailInput.disabled = !profileEditing;
+        phoneInput.disabled = !profileEditing;
+
+        if (profileEditing) {
+          btn.innerHTML =
+            '<i class="fa-solid fa-check"></i> Save Contact Details';
+          emailInput.focus();
+        } else {
+          btn.innerHTML =
+            '<i class="fa-solid fa-pen"></i> Edit Contact Details';
+          // Persist locally to the session user object if available
+          if (currentUser) {
+            currentUser.email = emailInput.value;
+            currentUser.phone = phoneInput.value;
+          }
+          alert("Contact details updated for this session.");
+        }
+      }
+
+      // 5. Excel Exporter Engine (SheetJS implementation)
+      async function renderReviews() {
+        try {
+          const data = await OCMC.getAllComplaints();
+          const complaints = (data.complaints || []).filter(
+            (c) => c.category === CATEGORY,
+          );
+          const reviews = complaints.filter(
+            (c) => typeof c.rating !== "undefined" && c.rating !== null && c.rating !== "",
+          );
+          const list = document.getElementById("reviewsList");
+          if (!list) return;
+
+          if (!reviews.length) {
+            list.innerHTML = '<div class="review-empty">No reviews have been submitted for closed complaints yet.</div>';
+            return;
+          }
+
+          list.innerHTML = reviews
+            .map((c) => {
+              const stars = "★".repeat(c.rating || 0) + "☆".repeat(5 - (c.rating || 0));
+              const feedback = c.ratingFeedback ? `<p style="margin-top:8px; color: var(--text-light);">“${escapeHtml(c.ratingFeedback)}”</p>` : "";
+              const userName = c.user && typeof c.user === "object" ? c.user.name : "Citizen";
+              const userEmail = c.user && typeof c.user === "object" ? c.user.email : "";
+              return `
+                <div class="review-card">
+                  <h4>${escapeHtml(c.title || "Complaint Review")}</h4>
+                  <div class="review-meta">${escapeHtml(c.complaintId || c.id || "N/A")} • ${escapeHtml(userName)}${userEmail ? ` • ${escapeHtml(userEmail)}` : ""}</div>
+                  <div class="review-meta">${escapeHtml(c.location || "N/A")} • ${new Date(c.createdAt || Date.now()).toLocaleString()}</div>
+                  <div class="review-stars">${escapeHtml(stars)}</div>
+                  ${feedback}
+                </div>
+              `;
+            })
+            .join("");
+        } catch (err) {
+          console.error("Failed to load reviews:", err);
+          const list = document.getElementById("reviewsList");
+          if (list) {
+            list.innerHTML = '<div class="review-empty">Unable to load reviews right now.</div>';
+          }
+        }
+      }
+
+      function downloadComplaintsExcel() {
+        if (cachedComplaints.length === 0) {
+          alert("No active record log available to export.");
+          return;
+        }
+
+        const dataRows = cachedComplaints.map((c, index) => ({
+          "Sr.No": index + 1,
+          "Complaint ID": c.id || c._id || `ELC-${1000 + index}`,
+          "Consumer Title": c.title || "Power Issue",
+          Description: c.description || "N/A",
+          "Current Status": c.status || "Pending",
+          "Date Created": c.createdAt
+            ? new Date(c.createdAt).toLocaleDateString()
+            : new Date().toLocaleDateString(),
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Complaints Logs");
+        XLSX.writeFile(workbook, `OCMS_Electricity_Complaints_Report.xlsx`);
+      }
+
+      // 6. Data Stream Syncing Implementation (Real-Time)
+      function bumpIfChanged(elId, newVal) {
+        const el = document.getElementById(elId);
+        const oldVal = el.innerText;
+        el.innerText = newVal;
+        if (String(oldVal) !== String(newVal)) {
+          el.classList.remove("bump");
+          void el.offsetWidth; // restart animation
+          el.classList.add("bump");
+        }
+      }
+
+      function updateLastSyncLabel(seconds) {
+        const label = document.getElementById("lastSyncTime");
+        if (seconds < 1) label.innerText = "just now";
+        else label.innerText = `${seconds}s ago`;
+      }
+
+      async function updateDashboard() {
+        try {
+          const data = await OCMC.getAllComplaints();
+          const complaints = (data.complaints || []).filter(
+            (c) => c.category === CATEGORY,
+          );
+          cachedComplaints = complaints;
+
+          bumpIfChanged("total", complaints.length);
+          currentPendingCount = complaints.filter(
+            (c) => c.status === "Pending",
+          ).length;
+          bumpIfChanged("pending", currentPendingCount);
+          bumpIfChanged(
+            "progress",
+            complaints.filter((c) => c.status === "In Progress").length,
+          );
+          currentClosedCount = complaints.filter(
+            (c) => c.status === "Closed",
+          ).length;
+          bumpIfChanged("closed", currentClosedCount);
+
+          // Live-ish grid telemetry (simulated real-time fluctuation)
+          const uptime = (99.5 + Math.random() * 0.49).toFixed(2);
+          document.getElementById("uptimeStat").innerText = `${uptime}%`;
+          const load = (55 + Math.random() * 30).toFixed(1);
+          document.getElementById("liveLoadStat").innerText =
+            `${load}% capacity`;
+
+          // Profile activity stats mirror live complaint data
+          document.getElementById("statHandled").innerText = currentClosedCount;
+          document.getElementById("statPendingMine").innerText =
+            currentPendingCount;
+          document.getElementById("statResponse").innerText =
+            `${(2 + Math.random() * 3).toFixed(1)}h`;
+
+          renderCharts(currentClosedCount);
+          renderReviews();
+          syncUserDirectorySim();
+
+          updateLastSyncLabel(0);
+        } catch (err) {
+          console.error("Failed to load dashboard data:", err);
+        }
+      }
+
+      // 7. Live registered user sync matrix from the backend
+      async function syncUserDirectorySim() {
+        try {
+          const data = await OCMC.getAllUsers();
+          const users = data.users || [];
+          const tbody = document.getElementById("usersTableBody");
+          const filter = document
+            .getElementById("userSearchInput")
+            .value.trim()
+            .toUpperCase();
+
+          tbody.innerHTML = "";
+
+          if (!users.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No registered live users available.</td></tr>`;
+            return;
+          }
+
+          users.forEach((u) => {
+            const row = document.createElement("tr");
+            const matches =
+              !filter ||
+              [u.name, u.email, u.address]
+                .some((v) => String(v || "").toUpperCase().includes(filter));
+
+            if (!matches) return;
+
+            row.innerHTML = `
+              <td><strong>${u.id || u._id || "N/A"}</strong></td>
+              <td>${u.name || "Unknown"}<br><small>${u.email || "No email"}</small></td>
+              <td>${u.address || "No address"}</td>
+              <td><span class="status">● ${u.status || "Active"}</span></td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          if (tbody.children.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No matching live users found.</td></tr>`;
+          }
+        } catch (err) {
+          console.error("Failed to load live user directory:", err);
+          document.getElementById("usersTableBody").innerHTML = `<tr><td colspan="4" style="text-align:center;color:#d9534f;padding:20px;">Unable to load live directory.</td></tr>`;
+        }
+      }
+
+      // 8. Dynamic Search Filter for User Directory Matrix Table List
+      function filterUsersTable() {
+        syncUserDirectorySim();
+      }
+
+      function renderCharts(closedCount) {
+        if (chart1) chart1.destroy();
+        if (chart2) chart2.destroy();
+
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        const gridColor = isDark
+          ? "rgba(255,255,255,0.06)"
+          : "rgba(0,0,0,0.03)";
+        const textColor = isDark ? "#a0a0a0" : "#777777";
+
+        chart1 = new Chart(document.getElementById("trendChart"), {
+          type: "line",
+          data: {
+            labels: ["Jan", "Feb", "Mar", "Current"],
+            datasets: [
+              {
+                label: "Resolved",
+                data: [15, 30, 45, closedCount],
+                borderColor: "#d35400",
+                tension: 0.3,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {duration: 400},
+            scales: {
+              x: {grid: {color: gridColor}, ticks: {color: textColor}},
+              y: {grid: {color: gridColor}, ticks: {color: textColor}},
+            },
+          },
+        });
+
+        chart2 = new Chart(document.getElementById("csatChart"), {
+          type: "doughnut",
+          data: {
+            labels: ["Happy", "Neutral", "Sad"],
+            datasets: [
+              {
+                data: [70, 20, 10],
+                backgroundColor: ["#2ecc71", "#f1c40f", "#e74c3c"],
+                borderHighlightColor: "transparent",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {duration: 400},
+            plugins: {legend: {labels: {color: textColor}}},
+          },
+        });
+      }
+
+      // App Initializations
+      updateDashboard();
+      setInterval(updateDashboard, 5000); // real-time refresh from server every 5s
+
+      // Ticking "updated Xs ago" clock, independent of the fetch cycle
+      let secondsSinceSync = 0;
+      setInterval(() => {
+        secondsSinceSync += 1;
+        updateLastSyncLabel(secondsSinceSync);
+      }, 1000);
+      // reset the tick counter whenever a fresh sync completes
+      const _origUpdate = updateDashboard;
+      updateDashboard = async function () {
+        await _origUpdate();
+        secondsSinceSync = 0;
+      };
+    </script>
+  </body>
+</html>

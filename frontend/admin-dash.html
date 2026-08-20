@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - OCMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            padding: 12px 16px;
+            margin: 6px 0;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(6px);
+        }
+
+        .sidebar a.active {
+            background: white;
+            color: #ee0979;
+            font-weight: 600;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+            width: calc(100% - 250px);
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            background: white;
+            padding: 18px 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .top-bar h2 {
+            color: #333;
+        }
+
+        .admin-tag {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dept-tag {
+            background: white;
+            color: #ee0979;
+            border: 2px solid #ee0979;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* MAIN STATS CARDS GRID */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            transition: 0.3s;
+            border-left: 5px solid #ff6a00;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card h1 {
+            color: #222;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        /* Dynamic border colors matching the system metrics */
+        .card.total { border-left-color: #ff6a00; }
+        .card.pending { border-left-color: #e74c3c; }
+        .card.progress { border-left-color: #00c6ff; }
+        .card.closed { border-left-color: #2ecc71; }
+        .card.resolution-rate { border-left-color: #9b59b6; }
+        .card.satisfaction { border-left-color: #f1c40f; }
+
+        /* CHARTS CONTAINER */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-box {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        }
+
+        .chart-box h3 {
+            margin-bottom: 20px;
+            color: #444;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        canvas {
+            width: 100% !important;
+            max-height: 260px;
+        }
+
+        /* INFO & UTILITIES GRID */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        /* ALERTS PANEL */
+        .alerts {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        }
+
+        .alerts h3, .system h3 {
+            color: #ee0979;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-left: 4px solid #ee0979;
+            margin: 10px 0;
+            background: #f9f9f9;
+            font-size: 14px;
+            border-radius: 0 8px 8px 0;
+        }
+        /* SYSTEM STATUS PANEL */
+        .system {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        }
+
+        .system p {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>OCMS ADMIN</h2>
+    <div id="sidebarDeptTag" style="text-align:center; margin-bottom:25px;">
+        <span class="dept-tag" style="background:rgba(255,255,255,0.15); color:white; border-color:white;">Loading...</span>
+    </div>
+    <a href="admin-dash.html" class="active">🏠 Dashboard</a>
+    <a href="admin-complaint.html">📋 Complaints</a>
+    <a href="admin-user.html">👥 Users List</a>
+    <a href="admin-report.html">📊 Reports & Analytics</a>
+    <a href="admin-notification.html">🔔 Notifications</a>
+    <a href="admin-department.html">🔁 Switch Department</a>
+    <a href="admin-logout.html" style="margin-top: auto; background: rgba(0,0,0,0.15);">🚪 Logout</a>
+</div>
+
+<div class="main">
+
+    <div class="top-bar">
+        <div>
+            <h2>Operational Dashboard</h2>
+            <p style="font-size: 12px; color: #777;">Real-time analytics and metric breakdowns</p>
+        </div>
+        <div class="top-bar-right">
+            <span class="dept-tag" id="deptBadge">Department</span>
+            <div class="admin-tag">● Live System</div>
+        </div>
+    </div>
+
+    <div class="cards">
+        <div class="card total">
+            <h3>Total Complaints</h3>
+            <h1 id="total">0</h1>
+        </div>
+        <div class="card pending">
+            <h3>Pending Tasks</h3>
+            <h1 id="pending">0</h1>
+        </div>
+        <div class="card progress">
+            <h3>In Progress</h3>
+            <h1 id="progress">0</h1>
+        </div>
+        <div class="card closed">
+            <h3>Closed/Resolved</h3>
+            <h1 id="closed">0</h1>
+        </div>
+        <div class="card resolution-rate">
+            <h3>Resolution Rate</h3>
+            <h1 id="resolutionRate">0%</h1>
+        </div>
+        <div class="card satisfaction">
+            <h3>Satisfaction Score</h3>
+            <h1 id="satisfactionScore">4.6 / 5.0</h1>
+        </div>
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-box">
+            <h3>Complaint Resolution Trends</h3>
+            <canvas id="resolutionTrendsChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>User Satisfaction Breakdown (CSAT)</h3>
+            <canvas id="satisfactionBreakdownChart"></canvas>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="alerts">
+            <h3>Live System Alerts</h3>
+            <div class="alert">⚠ New department assignment received</div>
+            <div class="alert">✔ Complaint ticket updated successfully</div>
+            <div class="alert">⚠ Queue load threshold reached 70%</div>
+            <div class="alert">✔ Database sync executed successfully</div>
+        </div>
+
+        <div class="system">
+            <h3>Core System Health</h3>
+            <p>Engine Server: <span class="status">Active</span></p>
+            <p>Database Cluster: <span class="status">Connected</span></p>
+            <p>API Integration: <span class="status">Running</span></p>
+            <p>Operational Uptime: <span class="status">99.92%</span></p>
+        </div>
+    </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+// Check admin authorization
+OCMC.requireAdmin();
+
+// Department Map Setup
+const DEPARTMENTS = {
+    electricity: { label: "Electricity", category: "Electricity", icon: "⚡" },
+    water:       { label: "Water",       category: "Water Issue", icon: "💧" },
+    road:        { label: "Road",        category: "Road Problem", icon: "🛣️" },
+    others:      { label: "Others",      category: "Others", icon: "📋" }
+};
+
+const deptKey = localStorage.getItem("ocms_admin_department");
+
+if (!deptKey || !DEPARTMENTS[deptKey]) {
+    window.location.href = "admin-department.html";
+} else {
+    const currentDept = DEPARTMENTS[deptKey];
+
+    // Bind active department headers to display views
+    document.getElementById("deptBadge").innerText = `${currentDept.icon} ${currentDept.label} Dept.`;
+    document.getElementById("sidebarDeptTag").innerHTML =
+        `<span class="dept-tag" style="background:rgba(255,255,255,0.15);color:white;border-color:white;">${currentDept.icon} ${currentDept.label}</span>`;
+
+    async function loadDashboard(){
+        try {
+            // Pull data from backend integration layer
+            const data = await OCMC.getAllComplaints();
+            const complaints = data.complaints || data || [];
+            
+            // Filter system scope specific to individual admin department
+            const deptComplaints = complaints.filter(c => c.category === currentDept.category);
+
+            const total = deptComplaints.length;
+            const pending = deptComplaints.filter(c => c.status === "Pending").length;
+            const progress = deptComplaints.filter(c => c.status === "In Progress").length;
+            const closed = deptComplaints.filter(c => c.status === "Closed").length;
+
+            // Calculate dynamic real-time resolution rate
+            const ratePercentage = total > 0 ? ((closed / total) * 100).toFixed(1) : "0.0";
+
+            // Push calculation updates straight into DOM nodes
+            document.getElementById("total").innerText = total;
+            document.getElementById("pending").innerText = pending;
+            document.getElementById("progress").innerText = progress;
+            document.getElementById("closed").innerText = closed;
+            document.getElementById("resolutionRate").innerText = `${ratePercentage}%`;
+
+            // Render Dynamic Data Visualizations
+            renderCharts(closed);
+
+        } catch (err) {
+            console.error(err);
+            alert("⚠️ Failed to parse dashboard system metrics: " + err.message);
+        }
+    }
+
+    // Function to spin up visual canvas frameworks
+    function renderCharts(closedCount) {
+        // Line Chart: Resolution Trends Over Months
+        const ctxTrends = document.getElementById('resolutionTrendsChart').getContext('2d');
+        new Chart(ctxTrends, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Current'],
+                datasets: [{
+                    label: 'Resolved Volume',
+                    data: [12, 24, 35, 48, 62, closedCount], // Real-time value hooked into current period entry
+                    borderColor: '#ee0979',
+                    backgroundColor: 'rgba(238, 9, 121, 0.06)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Doughnut Chart: CSAT Rating Breakdown
+        const ctxSatisfaction = document.getElementById('satisfactionBreakdownChart').getContext('2d');
+        new Chart(ctxSatisfaction, {
+            type: 'doughnut',
+            data: {
+                labels: ['5 Stars', '4 Stars', '3 Stars', 'Drop-offs'],
+                datasets: [{
+                    data: [65, 20, 10, 5],
+                    backgroundColor: ['#2ecc71', '#00c6ff', '#f1c40f', '#e74c3c'],
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+    }
+
+    // Run dashboard compilation logic
+    loadDashboard();
+}
+</script>
+
+</body>
+</html>

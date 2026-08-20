@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logout - OCMS</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff5e00, #ff176b);
+    flex-direction: column;
+}
+
+/* CARD */
+.logout-box {
+    width: 420px;
+    background: #fff;
+    padding: 35px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+    transition: 0.3s;
+}
+
+.logout-box:hover {
+    transform: translateY(-5px);
+}
+
+.logout-icon {
+    font-size: 65px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    color: #ff176b;
+    margin-bottom: 10px;
+}
+
+p {
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.logout-btn {
+    background: linear-gradient(135deg, #ff176b, #ff5e00);
+}
+
+.logout-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.cancel-btn {
+    background: #666;
+}
+
+.cancel-btn:hover {
+    background: #444;
+    transform: scale(1.05);
+}
+
+a {
+    text-decoration: none;
+}
+
+/* ABSOLUTE FLOATING SELECTOR OVER OUTSIDE CONTAINER INTERACTION */
+.lang-switcher-global {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.lang-switcher-global select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    color: #333;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="lang-switcher-global">
+    <select id="langSelect">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="es">Español</option>
+    </select>
+</div>
+
+<div class="logout-box">
+    <div class="logout-icon">🚪</div>
+    <h2 data-i18n="lg_head">Logout</h2>
+    <p data-i18n="lg_confirm">Are you sure you want to logout?</p>
+
+    <div class="buttons">
+        <button class="btn logout-btn" onclick="logoutUser()" data-i18n="btn_yes">
+            Yes, Logout
+        </button>
+
+        <a href="dashboard.html">
+            <button class="btn cancel-btn" type="button" data-i18n="btn_cancel">
+                Cancel
+            </button>
+        </a>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        lg_head: "Logout",
+        lg_confirm: "Are you sure you want to logout?",
+        btn_yes: "Yes, Logout",
+        btn_cancel: "Cancel",
+        alert_success: "Logged Out Successfully!"
+    },
+    hi: {
+        lg_head: "लॉगआउट",
+        lg_confirm: "क्या आप निश्चित रूप से लॉगआउट करना चाहते हैं?",
+        btn_yes: "हाँ, लॉगआउट करें",
+        btn_cancel: "रद्द करें",
+        alert_success: "सफलतापूर्वक लॉगआउट हो गया!"
+    },
+    mr: {
+        lg_head: "लॉगआउट",
+        lg_confirm: "आपण नक्की लॉगआउट करू इच्छिता?",
+        btn_yes: "होय, लॉगआउट करा",
+        btn_cancel: "रद्द करा",
+        alert_success: "यशस्वीरित्या लॉगआउट झाले!"
+    },
+    es: {
+        lg_head: "Cerrar Sesión",
+        lg_confirm: "¿Está seguro de que desea cerrar sesión?",
+        btn_yes: "Sí, salir",
+        btn_cancel: "Cancelar",
+        alert_success: "¡Sesión cerrada con éxito!"
+    }
+};
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.documentElement.lang = lang;
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+function logoutUser() {
+    const dict = translations[langSelect.value] || translations.en;
+    
+    OCMC.clearSession();
+    localStorage.clear();
+    sessionStorage.clear();
+
+    alert(dict.alert_success);
+    window.location.href = "login.html";
+}
+
+applyTranslations(initialLang);
+</script>
+</body>
+</html>

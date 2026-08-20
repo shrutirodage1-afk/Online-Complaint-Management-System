@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Page</title>
+
+<style>
+:root {
+    --bg-gradient: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --heading-color: #ee0979;
+    --border-color: #cccccc;
+    --input-bg: #f9f9f9;
+    --input-disabled: #f3f3f3;
+    --sidebar-bg: linear-gradient(135deg, #ff6a00, #ee0979);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.15);
+    --modal-bg: #ffffff;
+    --glow-color: rgba(238, 9, 121, 0.3);
+}
+
+[data-theme="dark"] {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --heading-color: #ff5252;
+    --border-color: #333333;
+    --input-bg: #2a2a2a;
+    --input-disabled: #181818;
+    --sidebar-bg: linear-gradient(135deg, #1e293b, #0f172a);
+    --sidebar-text: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.5);
+    --modal-bg: #1e1e1e;
+    --glow-color: rgba(255, 82, 82, 0.4);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: var(--sidebar-bg);
+    padding-top: 20px;
+    transition: background 0.3s ease;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: var(--sidebar-text);
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    padding: 15px 25px;
+    transition: 0.3s;
+    border-radius: 10px;
+    margin: 5px 10px;
+}
+
+.sidebar a:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(5px);
+}
+
+.sidebar a.active {
+    background: rgba(255,255,255,0.25);
+    font-weight: bold;
+    border-left: 4px solid white;
+}
+
+/* MAIN */
+.main {
+    margin-left: 230px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* ANIMATED CARD */
+.profile-container {
+    width: 450px;
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px var(--card-shadow);
+    text-align: center;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.profile-container:hover {
+    box-shadow: 0 15px 35px var(--glow-color);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-header-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.controls-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+h2 {
+    color: var(--heading-color);
+}
+
+/* ANIMATED PROFILE IMAGE CONTAINER */
+.profile-pic-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.profile-pic {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto;
+}
+
+.profile-pic img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--heading-color);
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px var(--glow-color);
+}
+
+.profile-pic-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6a00, #ee0979, #2563eb, #10b981);
+    background-size: 300% 300%;
+    z-index: 0;
+    animation: pulseGlow 4s ease infinite;
+    opacity: 0.7;
+    filter: blur(8px);
+}
+
+.profile-pic img {
+    position: relative;
+    z-index: 1;
+}
+
+.profile-pic img:hover {
+    transform: scale(1.1) rotate(3deg);
+}
+
+@keyframes pulseGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* BUTTONS */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.camera-btn { background: #2563eb; color: white; }
+.gallery-btn { background: #10b981; color: white; }
+.edit-btn { background: #6b7280; color: white; }
+.delete-btn { background: #ef4444; color: white; }
+
+.save-btn {
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    color: white;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--glow-color);
+}
+
+/* INPUTS */
+label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+    display: block;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--heading-color);
+}
+
+input:disabled, textarea:disabled {
+    background: var(--input-disabled);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--modal-bg);
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+video {
+    width: 300px;
+    border-radius: 10px;
+}
+
+.lang-switcher select, .theme-toggle button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.theme-toggle button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>OCMS</h2>
+    <a href="dashboard.html" data-i18n="nav_dashboard">🏠 Dashboard</a>
+    <a href="submitcomplaint.html" data-i18n="nav_submit">📝 Submit Complaint</a>
+    <a href="my-complaint.html" data-i18n="nav_myComplaints">📋 My Complaints</a>
+    <a href="track-complaint.html" data-i18n="nav_track">🔍 Track Complaint</a>
+    <a href="profile.html" class="active" data-i18n="nav_profile">👤 Profile</a>
+    <a href="notification.html" data-i18n="nav_notifications">🔔 Notifications</a>
+    <a href="logout.html" data-i18n="nav_logout">🚪 Logout</a>
+</div>
+
+<div class="main">
+<div class="profile-container">
+
+    <div class="profile-header-box">
+        <h2 data-i18n="prof_title">My Profile</h2>
+        <div class="controls-wrapper">
+            <div class="theme-toggle">
+                <button type="button" id="themeBtn">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText" data-i18n="theme_dark">Dark</span>
+                </button>
+            </div>
+            <div class="lang-switcher">
+                <select id="langSelect">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-pic-wrapper">
+        <div class="profile-pic">
+            <img id="preview" src="https://via.placeholder.com/130" alt="Profile Picture">
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn camera-btn" onclick="openCamera()" data-i18n="btn_camera">📷 Camera</button>
+        <button class="btn gallery-btn" onclick="openGallery()" data-i18n="btn_gallery">🖼 Gallery</button>
+        <button class="btn delete-btn" onclick="deletePhoto()" data-i18n="btn_delete">🗑 Delete</button>
+        <button class="btn edit-btn" onclick="enableEdit()" data-i18n="btn_edit">✏ Edit</button>
+    </div>
+
+    <div style="text-align:left;margin-top:15px;">
+        <label data-i18n="lbl_name">Full Name</label>
+        <input id="name" value="" disabled>
+
+        <label data-i18n="lbl_email">Email</label>
+        <input id="email" value="" disabled>
+
+        <label data-i18n="lbl_mobile">Mobile</label>
+        <input id="mobile" value="" disabled>
+
+        <label data-i18n="lbl_address">Address</label>
+        <textarea id="address" disabled></textarea>
+    </div>
+
+    <br>
+    <button class="save-btn" onclick="saveProfile()" data-i18n="btn_save">Save Changes</button>
+
+</div>
+</div>
+
+<div class="modal" id="cameraModal">
+    <div class="modal-content">
+        <video id="video" autoplay></video>
+        <br><br>
+        <button class="btn camera-btn" onclick="capturePhoto()" data-i18n="btn_capture">📸 Capture</button>
+        <button class="btn edit-btn" onclick="closeCamera()" data-i18n="btn_close">❌ Close</button>
+    </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+
+<script src="js/api.js"></script>
+<script>
+const translations = {
+    en: {
+        nav_dashboard: "🏠 Dashboard",
+        nav_submit: "📝 Submit Complaint",
+        nav_myComplaints: "📋 My Complaints",
+        nav_track: "🔍 Track Complaint",
+        nav_profile: "👤 Profile",
+        nav_notifications: "🔔 Notifications",
+        nav_logout: "🚪 Logout",
+        prof_title: "My Profile",
+        btn_camera: "📷 Camera",
+        btn_gallery: "🖼 Gallery",
+        btn_delete: "🗑 Delete",
+        btn_edit: "✏ Edit",
+        btn_save: "Save Changes",
+        btn_capture: "📸 Capture",
+        btn_close: "❌ Close",
+        lbl_name: "Full Name",
+        lbl_email: "Email",
+        lbl_mobile: "Mobile",
+        lbl_address: "Address",
+        cam_error: "Camera not allowed",
+        success_alert: "Profile Updated Successfully!",
+        theme_light: "Light",
+        theme_dark: "Dark"
+    },
+    hi: {
+        nav_dashboard: "🏠 डैशबोर्ड",
+        nav_submit: "📝 शिकायत दर्ज करें",
+        nav_myComplaints: "📋 मेरी शिकायतें",
+        nav_track: "🔍 शिकायत ट्रैक करें",
+        nav_profile: "👤 प्रोफ़ाइल",
+        nav_notifications: "🔔 सूचनाएं",
+        nav_logout: "🚪 लॉगआउट",
+        prof_title: "मेरी प्रोफाइल",
+        btn_camera: "📷 कैमरा",
+        btn_gallery: "🖼 गैलरी",
+        btn_delete: "🗑 हटाएं",
+        btn_edit: "✏ संपादित करें",
+        btn_save: "बदलाव सहेजें",
+        btn_capture: "📸 कैप्चर करें",
+        btn_close: "❌ बंद करें",
+        lbl_name: "पूरा नाम",
+        lbl_email: "ईमेल",
+        lbl_mobile: "मोबाइल नंबर",
+        lbl_address: "पता",
+        cam_error: "कैमरा एक्सेस की अनुमति नहीं है",
+        success_alert: "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    mr: {
+        nav_dashboard: "🏠 डॅशबोर्ड",
+        nav_submit: "📝 तक्रार नोंदवा",
+        nav_myComplaints: "📋 माझ्या तक्रारी",
+        nav_track: "🔍 तक्रार ट्रॅक करा",
+        nav_profile: "👤 प्रोफाइल",
+        nav_notifications: "🔔 सूचना",
+        nav_logout: "🚪 लॉगआउट",
+        prof_title: "माझी प्रोफाइल",
+        btn_camera: "📷 कॅमेरा",
+        btn_gallery: "🖼 गॅलरी",
+        btn_delete: "🗑 हटवा",
+        btn_edit: "✏ संपादन करा",
+        btn_save: "बदल जतन करा",
+        btn_capture: "📸 फोटो काढा",
+        btn_close: "❌ बंद करा",
+        lbl_name: "पूर्ण नाव",
+        lbl_email: "ईमेल",
+        lbl_mobile: "मोबाईल नंबर",
+        lbl_address: "पत्ता",
+        cam_error: "कॅमेरा वापरण्याची परवानगी नाही",
+        success_alert: "प्रोफाइल यशस्वीरित्या अपडेट झाली!",
+        theme_light: "लाइट",
+        theme_dark: "डार्क"
+    },
+    es: {
+        nav_dashboard: "🏠 Panel",
+        nav_submit: "📝 Enviar Queja",
+        nav_myComplaints: "📋 Mis Quejas",
+        nav_track: "🔍 Rastrear Queja",
+        nav_profile: "👤 Perfil",
+        nav_notifications: "🔔 Notificaciones",
+        nav_logout: "🚪 Cerrar Sesión",
+        prof_title: "Mi Perfil",
+        btn_camera: "📷 Cámara",
+        btn_gallery: "🖼 Galería",
+        btn_delete: "🗑 Eliminar",
+        btn_edit: "✏ Editar",
+        btn_save: "Guardar Cambios",
+        btn_capture: "📸 Capturar",
+        btn_close: "❌ Cerrar",
+        lbl_name: "Nombre Completo",
+        lbl_email: "Correo Electrónico",
+        lbl_mobile: "Móvil",
+        lbl_address: "Dirección",
+        cam_error: "Cámara no permitida",
+        success_alert: "¡Perfil actualizado con éxito!",
+        theme_light: "Claro",
+        theme_dark: "Oscuro"
+    }
+};
+
+// ===== Dark / Light Theme Logic =====
+const themeBtn = document.getElementById("themeBtn");
+const themeIcon = document.getElementById("themeIcon");
+const themeText = document.getElementById("themeText");
+
+function getSavedTheme() {
+    return localStorage.getItem("ocms_theme") || "light";
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("ocms_theme", theme);
+    
+    if (theme === "dark") {
+        themeIcon.textContent = "☀️";
+        themeText.setAttribute("data-i18n", "theme_light");
+    } else {
+        themeIcon.textContent = "🌙";
+        themeText.setAttribute("data-i18n", "theme_dark");
+    }
+    applyTranslations(getSavedLang());
+}
+
+themeBtn.addEventListener("click", () => {
+    const currentTheme = getSavedTheme();
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(newTheme);
+});
+
+// Apply initial theme
+applyTheme(getSavedTheme());
+
+function getSavedLang() { return localStorage.getItem("ocms_lang") || "en"; }
+function setSavedLang(lang) { localStorage.setItem("ocms_lang", lang); }
+
+function applyTranslations(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    document.documentElement.lang = lang;
+}
+
+const langSelect = document.getElementById("langSelect");
+const initialLang = getSavedLang();
+langSelect.value = initialLang;
+
+langSelect.addEventListener("change", (e) => {
+    const lang = e.target.value;
+    setSavedLang(lang);
+    applyTranslations(lang);
+});
+
+OCMC.requireAuth();
+
+let stream;
+let avatarFile = null;
+
+async function loadProfile(){
+    try {
+        const data = await OCMC.getProfile();
+        const u = data.user;
+        document.getElementById("name").value = u.name || "";
+        document.getElementById("email").value = u.email || "";
+        document.getElementById("mobile").value = u.phone || "";
+        document.getElementById("address").value = u.address || "";
+        if (u.avatar) document.getElementById("preview").src = OCMC.imageUrl(u.avatar);
+    } catch (err) {
+        alert("⚠️ " + err.message);
+    }
+}
+
+function openCamera() {
+    const dict = translations[langSelect.value] || translations.en;
+    document.getElementById("cameraModal").style.display = "flex";
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(s => {
+        stream = s;
+        document.getElementById("video").srcObject = stream;
+    })
+    .catch(() => alert(dict.cam_error));
+}
+
+function capturePhoto() {
+    const video = document.getElementById("video");
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(blob => {
+        avatarFile = new File([blob], "avatar.png", { type: "image/png" });
+        document.getElementById("preview").src = canvas.toDataURL("image/png");
+    });
+
+    closeCamera();
+}
+
+function closeCamera() {
+    document.getElementById("cameraModal").style.display = "none";
+    if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+    }
+}
+
+function openGallery() {
+    document.getElementById("fileInput").click();
+}
+
+document.getElementById("fileInput").addEventListener("change", function() {
+    if (this.files[0]) {
+        avatarFile = this.files[0];
+        document.getElementById("preview").src = URL.createObjectURL(this.files[0]);
+    }
+});
+
+function deletePhoto() {
+    avatarFile = null;
+    document.getElementById("preview").src = "https://via.placeholder.com/130";
+}
+
+function enableEdit() {
+    document.getElementById("name").disabled = false;
+    document.getElementById("email").disabled = false;
+    document.getElementById("mobile").disabled = false;
+    document.getElementById("address").disabled = false;
+}
+
+async function saveProfile() {
+    const dict = translations[langSelect.value] || translations.en;
+    const formData = new FormData();
+    formData.append("name", document.getElementById("name").value);
+    formData.append("email", document.getElementById("email").value);
+    formData.append("phone", document.getElementById("mobile").value);
+    formData.append("address", document.getElementById("address").value);
+    if (avatarFile) formData.append("avatar", avatarFile);
+
+    try {
+        const data = await OCMC.updateProfile(formData);
+        const session = OCMC.getUser();
+        OCMC.setSession(OCMC.getToken(), { ...session, ...data.user });
+
+        document.getElementById("name").disabled = true;
+        document.getElementById("email").disabled = true;
+        document.getElementById("mobile").disabled = true;
+        document.getElementById("address").disabled = true;
+
+        alert(dict.success_alert);
+    } catch (err) {
+        alert("⚠️ " + err.message);
+    }
+}
+
+applyTranslations(initialLang);
+loadProfile();
+</script>
+</body>
+</html>
