@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCMC AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header styling */
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.2rem;
+        }
+
+        .status-indicator {
+            font-size: 0.85rem;
+            background: #28a745;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* Chat display container */
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fdfdfd;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            max-width: 75%;
+        }
+
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        /* Bot Message Styling */
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .bot-message .message-content {
+            background-color: #e9ecef;
+            color: #333;
+            border-top-left-radius: 2px;
+        }
+
+        /* Temporary typing state style */
+        .bot-typing-message {
+            align-self: flex-start;
+        }
+        .bot-typing-message .message-content {
+            background-color: #e9ecef;
+            color: #777;
+            font-style: italic;
+            border-top-left-radius: 2px;
+        }
+
+        /* User Message Styling */
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .user-message .message-content {
+            background-color: #007bff;
+            color: white;
+            border-top-right-radius: 2px;
+        }
+
+        /* Input container layout */
+        .chat-input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            background-color: #fff;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-input-area button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🚀 OCMC AI Assistant</h2>
+            <div class="status-indicator">Online</div>
+        </div>
+
+        <div class="chat-box" id="chat-box">
+            <div class="message bot-message">
+                <div class="message-content">Hello! How can I help you today?</div>
+            </div>
+        </div>
+
+        <form class="chat-input-area" id="chat-form">
+            <input 
+                type="text" 
+                id="user-input" 
+                placeholder="Type your message here..." 
+                autocomplete="off" 
+                required
+            >
+            <button type="submit" id="send-btn">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+        
+        // Target endpoint corresponding to your Express server setup
+        const API_URL = "http://localhost:5000/api/chat";
+
+        // Append messages to the chat viewport
+        function appendMessage(text, senderClassName) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', senderClassName);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            chatBox.appendChild(messageDiv);
+            
+            // Auto-scroll to the latest message
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Handle Form Submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const messageText = userInput.value.trim();
+            if (!messageText) return;
+
+            // 1. Render user message
+            appendMessage(messageText, 'user-message');
+            userInput.value = '';
+
+            // 2. Render temporary "Thinking..." placeholder
+            appendMessage("Thinking...", 'bot-typing-message');
+            
+            // Locate the placeholder element specifically to remove it later
+            const typingIndicators = chatBox.querySelectorAll('.bot-typing-message');
+            const targetTypingIndicator = typingIndicators[typingIndicators.length - 1];
+
+            try {
+                // 3. Post data payload to your Node/Express backend
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+                
+                // Clear the loading placeholder
+                if (targetTypingIndicator) targetTypingIndicator.remove();
+
+                if (response.ok) {
+                    appendMessage(data.reply, 'bot-message');
+                } else {
+                    appendMessage(`Error: ${data.reply || 'Something went wrong.'}`, 'bot-message');
+                }
+
+            } catch (error) {
+                if (targetTypingIndicator) targetTypingIndicator.remove();
+                appendMessage("Failed to connect to the server. Ensure your Node backend is active on port 5000.", 'bot-message');
+                console.error("Fetch Error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
