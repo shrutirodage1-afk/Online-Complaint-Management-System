@@ -4,7 +4,10 @@
    backend. Replaces old localStorage-only logic.
    ===================================================== */
 
-const API_BASE = "http://localhost:5000/api";
+const API_ORIGIN = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ? "http://localhost:5000"
+  : "https://online-complaint-management-system-5527.onrender.com";
+const API_BASE = `${API_ORIGIN}/api`;
 
 const OCMC = {
   // ---- token / session helpers ----
@@ -148,6 +151,6 @@ const OCMC = {
   imageUrl(path) {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
+    return `${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
   }
 };

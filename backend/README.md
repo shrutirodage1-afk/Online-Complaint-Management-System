@@ -75,3 +75,7 @@ All authenticated routes require header: `Authorization: Bearer <token>`.
 - JWT-based auth (7 day expiry by default).
 - Uploaded files validated to images only, 5MB limit.
 - Update `JWT_SECRET` and `MONGO_URI` for production; restrict `CLIENT_ORIGIN`.
+- For the deployed frontend, set `CLIENT_ORIGIN` in the Render backend environment to
+  `https://online-complaint-management-system-alpha.vercel.app`. For local development,
+  comma-separated origins are supported, for example:
+  `https://online-complaint-management-system-alpha.vercel.app,http://localhost:5500,http://127.0.0.1:5500`.

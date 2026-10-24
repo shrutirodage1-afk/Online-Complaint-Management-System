@@ -19,7 +19,10 @@ const Complaint = require("./models/Complaint");
 const app = express();
 
 // --- Core middleware ---
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
+  : "*";
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

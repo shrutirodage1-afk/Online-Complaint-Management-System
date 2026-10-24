@@ -6,13 +6,15 @@ to the Node/Express + MongoDB backend (see the `backend` package) instead of
 
 ## How it connects to the backend
 
-All pages load `js/api.js`, which talks to the API at:
+All pages load `js/api.js`. Deployed pages use the production API at:
 
 ```js
-const API_BASE = "http://localhost:5000/api";
+https://online-complaint-management-system-5527.onrender.com/api
 ```
 
-Edit that line if your backend runs on a different host/port (e.g. a deployed URL).
+When previewed on `localhost` or `127.0.0.1`, the helper automatically uses
+`http://localhost:5000/api`. Uploaded images use the matching backend host.
+For another production backend, update `API_ORIGIN` in `js/api.js`.
 
 - Login/Register pages call `/api/auth/...` and store the returned JWT in
   `localStorage` under `ocms_token` (only the token + basic profile is cached
@@ -37,5 +39,7 @@ Edit that line if your backend runs on a different host/port (e.g. a deployed UR
    ```
 3. Open `welcome.html` (or `login.html`) in the browser.
 
-Make sure the backend's `CLIENT_ORIGIN` in `.env` matches the URL you're serving
-the frontend from, so CORS allows the requests.
+Make sure the backend's `CLIENT_ORIGIN` in `.env` matches the deployed frontend
+origin, so CORS allows the requests. The Render URL above is the backend API;
+deploy this `frontend` folder separately as a static site and use its public URL
+to open the website.
