@@ -19,9 +19,13 @@ const Complaint = require("./models/Complaint");
 const app = express();
 
 // --- Core middleware ---
-const allowedOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
-  : "*";
+const configuredOrigins = (process.env.CLIENT_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = configuredOrigins.includes("*")
+  ? "*"
+  : [...new Set([...configuredOrigins, "https://online-complaint-management-system-alpha.vercel.app"])];
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
